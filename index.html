@@ -109,7 +109,7 @@ button.sound-toggle[aria-pressed="false"]{color:#817b70;background:#fffdf6b8}
 </div>
 <footer>
   <div class="controls"><button id="start">웹캠 켜기</button><button id="reset" title="모든 포털 지우기 (Esc)">모두 지우기</button></div>
-  <div class="status-wrap"><span class="status-label">A LITTLE NOTE FOR YOU</span><span id="status" role="status" aria-live="polite">웹캠을 켜고 원·별·세모·네모를 그려봐요. 그릴 때마다 작은 세계가 하나씩 더 열려요.</span></div>
+  <div class="status-wrap"><span class="status-label">A LITTLE NOTE FOR YOU</span><span id="status" role="status" aria-live="polite">원·별·세모·네모를 그려 포털마다 다른 동물을 만나 봐요.</span></div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/selfie_segmentation.js" crossorigin="anonymous"></script>
 <script>
@@ -186,13 +186,28 @@ addEventListener('resize',resize);resize();
 // Input adapter: future hand landmarks can call beginStroke / moveStroke / endStroke.
 function beginStroke(x,y){points=[{x,y}];drawing=true;sound.lastDraw=-Infinity;playDrawSound();syncSceneUI();}
 function moveStroke(x,y){if(drawing&&Math.hypot(x-points.at(-1).x,y-points.at(-1).y)>3){points.push({x,y});playDrawSound();}}
+const portalAnimals={
+  rabbit:{name:'토끼',fur:'#fffef9'},cat:{name:'고양이',fur:'#e6d9fa'},
+  dog:{name:'강아지',fur:'#fff2dc'},bear:{name:'곰',fur:'#c89472'},fox:{name:'여우',fur:'#f4a16d'}
+};
+let remainingAnimals=[];
+const animalExpressions=['neutral','smile','angry','sad','surprised','wink','kiss'];
+function changePortalExpression(portal,t){
+  const choices=animalExpressions.filter(face=>face!==portal.expression);
+  portal.expression=choices[Math.floor(Math.random()*choices.length)];
+  portal.nextExpressionAt=t+2300+Math.random()*1000;
+}
 function endStroke(){
   if(!drawing)return;drawing=false;
   const result=recognizeShape(points);
   if(result){
-    portals.push({...result,born:performance.now()});
+    if(!remainingAnimals.length)remainingAnimals=Object.keys(portalAnimals);
+    const [animal]=remainingAnimals.splice(Math.floor(Math.random()*remainingAnimals.length),1);
+    const portal={...result,born:performance.now(),animal};
+    changePortalExpression(portal,portal.born);
+    portals.push(portal);
     playPortalSound(result.type);
-    status.textContent=result.label+' 포털을 더했어요 ♡ 지금 '+portals.length+'개가 열려 있어요. 다른 곳에도 도형을 그려봐요.';
+    status.textContent=result.label+' 포털에 '+portalAnimals[animal].name+' 등장 ♡ 지금 '+portals.length+'개가 열려 있어요.';
   }else status.textContent='원·별·세모·네모를 한 획으로 그리고 시작점 근처로 돌아와 닫아 주세요. 별은 테두리 또는 한 획 별 모양으로 그려 주세요.';
   points=[];syncSceneUI();
 }
@@ -333,98 +348,98 @@ canvas.addEventListener('pointercancel',()=>{drawing=false;points=[];activePoint
 function clearPortal(){if(portals.length||points.length){toyTone(1174.7,0,.18,.065,.8);toyTone(880,.07,.2,.05,.75);toyTone(587.3,.14,.24,.045); }portals=[];points=[];drawing=false;activePointer=null;syncSceneUI();status.textContent='다음엔 어떤 모양일까요? 원·별·세모·네모를 그려봐요.';}
 document.querySelector('#reset').onclick=clearPortal;
 addEventListener('keydown',e=>{if(e.key==='Escape')clearPortal();});
-document.querySelector('#start').onclick=async function(){playButtonSound();if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;portals=[];cameraReady=false;resetAvatar();video.srcObject=null;this.textContent='웹캠 켜기';status.textContent='웹캠을 껐어요. 그림으로 작은 세계를 열어봐요.';syncSceneUI();return;}this.disabled=true;try{if(!navigator.mediaDevices?.getUserMedia)throw Error('unsupported');stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});video.srcObject=stream;await video.play();this.textContent='웹캠 끄기';status.textContent='인물 분리 준비 중…';await prepareSegmentation();}catch(e){stream?.getTracks().forEach(t=>t.stop());stream=null;this.textContent='웹캠 다시 시도';status.textContent=e.name==='NotAllowedError'?'카메라 권한이 필요해요. 브라우저의 카메라 접근을 허용해 주세요.':'카메라 또는 인식 프로그램을 불러오지 못했어요. 인터넷 연결과 카메라를 확인하고 Chrome·Edge에서 다시 열어 주세요.';}finally{this.disabled=false;}};
-// 참고 이미지의 토끼를 벡터로 그립니다. 이미지 다운로드 없이 HTML 하나로 실행됩니다.
-// 인물 마스크의 위치와 기울기만 사용하며 얼굴 인식이나 원본 영상 합성을 하지 않습니다.
-const avatarTarget={x:0,y:0,tilt:0,size:1,left:0,right:0};
+document.querySelector('#start').onclick=async function(){
+  playButtonSound();
+  if(stream){
+    stream.getTracks().forEach(track=>track.stop());
+    stream=null;portals=[];cameraReady=false;resetAvatar();video.srcObject=null;
+    this.textContent='웹캠 켜기';
+    status.textContent='웹캠을 껐어요. 그림으로 작은 세계를 열어봐요.';
+    syncSceneUI();return;
+  }
+  this.disabled=true;
+  try{
+    if(!navigator.mediaDevices?.getUserMedia)throw Error('unsupported');
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+    video.srcObject=stream;
+    await video.play();
+    this.textContent='웹캠 끄기';
+    status.textContent='인물 분리와 고개 움직임 추적 준비 중…';
+    prepareSegmentation();
+    prepareFaceTracking(stream);
+  }catch(e){
+    stream?.getTracks().forEach(track=>track.stop());
+    stream=null;video.srcObject=null;resetAvatar();
+    this.textContent='웹캠 다시 시도';
+    status.textContent=e.name==='NotAllowedError'?'카메라 권한이 필요해요. 브라우저의 카메라 접근을 허용해 주세요.':'카메라 또는 인식 프로그램을 불러오지 못했어요. 인터넷 연결과 카메라를 확인하고 Chrome·Edge에서 다시 열어 주세요.';
+  }finally{this.disabled=false;}
+};
+
+const restingAvatar={x:0,y:0,tilt:0,size:1};
+const avatarTarget={...restingAvatar};
 const avatarPose={...avatarTarget};
 let lastAvatarSeen=-Infinity,lastAvatarFrame=null;
+let faceModelPromise,faceTracker=null,lastFaceCheck=-Infinity,lastVideoTime=-1;
 const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 function resetAvatar(){
-  Object.assign(avatarTarget,{x:0,y:0,tilt:0,size:1,left:0,right:0});
-  Object.assign(avatarPose,avatarTarget);
-  lastAvatarSeen=-Infinity;lastAvatarFrame=null;
+  Object.assign(avatarTarget,restingAvatar);
+  Object.assign(avatarPose,restingAvatar);
+  lastAvatarSeen=lastFaceCheck=-Infinity;lastAvatarFrame=null;lastVideoTime=-1;
+  faceTracker=null;
 }
-function trackAvatar(data){
-  let count=0,sx=0,sy=0,minX=bw,maxX=0,minY=bh,maxY=0;
-  // 4px 간격 샘플링으로 기존 인물 분리 결과를 가볍게 재사용합니다.
-  for(let y=0;y<bh;y+=4)for(let x=0;x<bw;x+=4){
-    if(data[(y*bw+x)*4]<155)continue;
-    count++;sx+=x;sy+=y;
-    minX=Math.min(minX,x);maxX=Math.max(maxX,x);
-    minY=Math.min(minY,y);maxY=Math.max(maxY,y);
-  }
-  if(count<80||maxY-minY<40)return;
-  const cx=sx/count,cy=sy/count,bodyW=Math.max(40,maxX-minX),bodyH=maxY-minY;
-  let topX=0,topCount=0,leftY=0,leftCount=0,rightY=0,rightCount=0;
-  for(let y=minY;y<=maxY;y+=4)for(let x=minX;x<=maxX;x+=4){
-    if(data[(y*bw+x)*4]<155)continue;
-    if(y<minY+bodyH*.3){topX+=x;topCount++;}
-    if(y<minY+bodyH*.65){
-      if(x<cx-bodyW*.28){leftY+=y;leftCount++;}
-      if(x>cx+bodyW*.28){rightY+=y;rightCount++;}
+async function prepareFaceTracking(cameraStream){
+  const visionUrl='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18';
+  faceModelPromise??=import(visionUrl+'/vision_bundle.mjs').then(async ({FaceLandmarker,FilesetResolver})=>{
+    const files=await FilesetResolver.forVisionTasks(visionUrl+'/wasm');
+    return FaceLandmarker.createFromOptions(files,{
+      baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task'},
+      runningMode:'VIDEO',numFaces:1
+    });
+  }).catch(error=>{faceModelPromise=null;throw error;});
+  try{
+    const tracker=await faceModelPromise;
+    if(stream===cameraStream){
+      faceTracker=tracker;
+      status.textContent='포털을 그려 보세요. 동물이 고개 움직임을 따라가고 표정은 저절로 바뀌어요.';
     }
+  }catch{
+    if(stream===cameraStream)status.textContent='고개 움직임 추적을 불러오지 못했어요. 동물 표정은 저절로 바뀌어요.';
   }
-  // 마스크는 원본 카메라 좌표이므로 표시할 때 좌우를 반전합니다.
-  avatarTarget.x=clamp((.5-cx/bw)*2,-1,1);
-  avatarTarget.y=clamp((cy/bh-.5)*2,-1,1);
-  avatarTarget.tilt=topCount?clamp(-(topX/topCount-cx)/bodyH,-.28,.28):0;
-  avatarTarget.size=clamp(.9+bodyH/bh*.18,.94,1.08);
-  const lift=(sum,n)=>n>8?clamp((minY+bodyH*.45-sum/n)/bodyH*3,0,1):0;
-  avatarTarget.left=lift(rightY,rightCount);
-  avatarTarget.right=lift(leftY,leftCount);
-  lastAvatarSeen=performance.now();
 }
-function bunnyPath(draw,color){
+function trackFace(t){
+  if(!stream||!faceTracker||video.readyState<2||t-lastFaceCheck<75||video.currentTime===lastVideoTime)return;
+  lastFaceCheck=t;lastVideoTime=video.currentTime;
+  try{
+    const face=faceTracker.detectForVideo(video,t).faceLandmarks[0];
+    if(!face)return;
+    const rightEye=face[33],leftEye=face[263],nose=face[1];
+    const eyeDx=leftEye.x-rightEye.x,eyeDy=(leftEye.y-rightEye.y)*video.videoHeight/video.videoWidth;
+    avatarTarget.x=clamp((.5-nose.x)*2,-1,1);
+    avatarTarget.y=clamp((nose.y-.5)*2,-1,1);
+    avatarTarget.tilt=clamp(-Math.atan2(eyeDy,eyeDx),-.28,.28);
+    avatarTarget.size=clamp(.86+Math.hypot(eyeDx,eyeDy)*.7,.92,1.08);
+    lastAvatarSeen=t;
+  }catch{
+    faceTracker=null;
+    status.textContent='고개 움직임 추적이 멈췄어요. 동물 표정은 계속 바뀌어요.';
+  }
+}
+function animalPath(draw,color){
   ctx.beginPath();draw();ctx.closePath();ctx.fillStyle=color;ctx.fill();ctx.stroke();
 }
-function bunnyArm(side,lift,sway){
-  ctx.save();ctx.translate(side*140,142);ctx.scale(side,1);
-  ctx.rotate(-.55-lift*.65+sway);
-  // 작은 흰 손과 넉넉한 분홍 소매.
-  bunnyPath(()=>{
-    ctx.moveTo(44,-23);ctx.bezierCurveTo(67,-38,84,-24,86,-5);
-    ctx.bezierCurveTo(90,15,68,27,48,17);
-  },'#fffef9');
-  bunnyPath(()=>{
-    ctx.moveTo(-9,-35);ctx.lineTo(49,-28);ctx.lineTo(57,26);
-    ctx.lineTo(-8,43);
-  },'#e9a5ae');
-  ctx.restore();
-}
-function drawBunny(t,pose){
-  const s=reduceMotion?1:t*.001,bob=reduceMotion?0:Math.sin(s*2.4)*2;
-  ctx.translate(0,bob);ctx.lineWidth=9;ctx.lineJoin='round';ctx.lineCap='round';
-  ctx.strokeStyle='#101110';
-  // 발 → 팔 → 옷 → 얼굴 순서로 겹쳐 그립니다.
-  for(const side of [-1,1]){
-    ctx.save();ctx.translate(side*88,285);ctx.rotate(side*-.12);
-    bunnyPath(()=>{
-      ctx.moveTo(-43,-12);ctx.bezierCurveTo(-58,4,-54,30,-39,34);
-      ctx.bezierCurveTo(-12,39,29,37,44,28);
-      ctx.bezierCurveTo(59,14,46,-10,30,-15);
-    },'#fffef9');ctx.restore();
-  }
-  bunnyArm(-1,pose.left,Math.sin(s*2)*.025);
-  bunnyArm(1,pose.right,-Math.sin(s*2)*.025);
-  bunnyPath(()=>{
-    ctx.moveTo(-109,83);ctx.bezierCurveTo(-133,95,-149,118,-155,151);
-    ctx.lineTo(-145,264);ctx.bezierCurveTo(-143,309,133,312,146,267);
-    ctx.lineTo(156,151);ctx.bezierCurveTo(148,118,132,95,108,83);
-  },'#e9a5ae');
-  ctx.save();ctx.translate(0,-30);ctx.rotate(pose.tilt);
+function drawRabbitOutline(){
   // 헤드폰 밴드는 귀 뒤에 놓입니다.
   ctx.lineWidth=13;ctx.beginPath();ctx.moveTo(-186,-5);
   ctx.bezierCurveTo(-228,-250,221,-263,185,-5);ctx.stroke();
   for(const side of [-1,1]){
     ctx.save();ctx.scale(side,1);
-    bunnyPath(()=>{
+    animalPath(()=>{
       ctx.moveTo(158,-72);ctx.bezierCurveTo(179,-86,212,-74,214,-49);
       ctx.lineTo(214,1);ctx.bezierCurveTo(212,34,181,43,158,22);
     },'#101110');ctx.restore();
   }
   ctx.lineWidth=9;
-  bunnyPath(()=>{
+  animalPath(()=>{
     ctx.moveTo(-142,-93);ctx.bezierCurveTo(-129,-125,-110,-133,-103,-150);
     ctx.bezierCurveTo(-123,-193,-130,-293,-100,-315);
     ctx.bezierCurveTo(-68,-343,-33,-258,-31,-155);
@@ -434,41 +449,129 @@ function drawBunny(t,pose){
     ctx.bezierCurveTo(164,95,103,132,7,134);
     ctx.bezierCurveTo(-90,134,-158,104,-172,37);
     ctx.bezierCurveTo(-184,-11,-171,-60,-142,-93);
-  },'#fffef9');
-  // 검은 점 눈, 짧은 X자 입. 눈 깜빡임은 작은 생동감 효과입니다.
-  const blink=s%5.4<.13,eyeY=29;
-  ctx.fillStyle='#101110';
+  },portalAnimals.rabbit.fur);
+}
+function animalOval(x,y,rx,ry,color,angle=0){
+  ctx.beginPath();ctx.ellipse(x,y,rx,ry,angle,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
+}
+function drawAnimalOutline(animal){
+  const {fur}=portalAnimals[animal];
   for(const side of [-1,1]){
-    ctx.beginPath();ctx.ellipse(side*62,eyeY+(side===1?3:0),7,blink?1.5:9,side*.12,0,Math.PI*2);ctx.fill();
+    ctx.save();ctx.scale(side,1);
+    if(animal==='bear'){
+      animalPath(()=>ctx.arc(120,-105,52,0,Math.PI*2),fur);
+      animalOval(121,-106,27,25,'#e6b296');
+    }else if(animal==='dog'){
+      animalPath(()=>{
+        ctx.moveTo(102,-101);ctx.bezierCurveTo(175,-155,212,-53,198,34);
+        ctx.bezierCurveTo(192,75,156,77,137,44);ctx.lineTo(102,-101);
+      },'#bc805d');
+    }else{
+      const earTip=animal==='fox'?-213:-190;
+      animalPath(()=>{
+        ctx.moveTo(54,-94);ctx.quadraticCurveTo(96,earTip+25,151,earTip);
+        ctx.quadraticCurveTo(173,earTip-5,159,-63);
+      },fur);
+      animalOval(130,-132,14,33,animal==='fox'?'#fbd8bf':'#f4b7cf',.31);
+    }
+    ctx.restore();
   }
-  ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(-11,81);ctx.lineTo(11,69);
-  ctx.moveTo(-11,69);ctx.lineTo(11,81);ctx.stroke();
-  ctx.restore();
+  if(animal==='fox'){
+    animalPath(()=>{
+      ctx.moveTo(0,-113);ctx.bezierCurveTo(121,-113,153,-53,186,40);
+      ctx.bezierCurveTo(139,48,119,135,0,134);
+      ctx.bezierCurveTo(-119,135,-139,48,-186,40);
+      ctx.bezierCurveTo(-153,-53,-121,-113,0,-113);
+    },fur);
+    animalOval(-73,68,65,31,'#fff4de',.33);
+    animalOval(73,68,65,31,'#fff4de',-.33);
+    animalOval(0,91,65,32,'#fff4de');
+  }else{
+    animalPath(()=>{
+      ctx.moveTo(0,-119);ctx.bezierCurveTo(106,-119,163,-67,170,18);
+      ctx.bezierCurveTo(181,99,98,134,0,134);
+      ctx.bezierCurveTo(-98,134,-181,99,-170,18);
+      ctx.bezierCurveTo(-163,-67,-106,-119,0,-119);
+    },fur);
+    if(animal==='dog')animalOval(-65,15,43,48,'#e9b99a',.28);
+    if(animal==='bear')animalOval(0,75,58,45,'#f1d3b6');
+  }
+  animalOval(0,55,animal==='dog'?19:13,animal==='dog'?11:8,animal==='cat'?'#bd6889':'#42302f');
+  if(animal==='cat'){
+    ctx.lineWidth=4;
+    for(const side of [-1,1]){
+      ctx.beginPath();ctx.moveTo(side*118,55);ctx.lineTo(side*151,49);
+      ctx.moveTo(side*120,70);ctx.lineTo(side*151,75);ctx.stroke();
+    }
+  }
+}
+function drawAnimalHead(t,pose,animal,face){
+  const seconds=t/1000,bob=reduceMotion?0:Math.sin(seconds*2.4)*2;
+  ctx.rotate(pose.tilt);ctx.translate(0,(animal==='rabbit'?94:30)+bob);
+  ctx.lineWidth=9;ctx.lineJoin='round';ctx.lineCap='round';ctx.strokeStyle='#101110';
+  if(animal==='rabbit')drawRabbitOutline();else drawAnimalOutline(animal);
+  const blink=face==='neutral'&&!reduceMotion&&seconds%5.4<.13;
+  ctx.lineWidth=7;
+  for(const side of [-1,1]){
+    const x=side*62,y=30;
+    if(face==='smile'||face==='kiss'||face==='wink'){
+      ctx.fillStyle=face==='kiss'?'#f3a9bd':'#f8c9d5';
+      ctx.beginPath();ctx.ellipse(side*104,60,19,10,0,0,Math.PI*2);ctx.fill();
+    }
+    if(face==='angry'||face==='sad'||face==='surprised'){
+      const brow=face==='angry'?13:face==='sad'?-13:0;
+      ctx.beginPath();ctx.moveTo(x+side*20,1-brow);ctx.quadraticCurveTo(x,-10,x-side*15,1+brow);ctx.stroke();
+    }
+    ctx.beginPath();
+    if(face==='smile'||face==='kiss'||(face==='wink'&&side<0)||blink){
+      ctx.moveTo(x-15,y+4);ctx.quadraticCurveTo(x,face==='kiss'?y+17:y-18,x+15,y+4);ctx.stroke();
+    }else{
+      const wide=face==='surprised';
+      ctx.fillStyle='#101110';ctx.ellipse(x,y,wide?11:8,wide?15:10,0,0,Math.PI*2);ctx.fill();
+      if(face==='sad'){
+        ctx.fillStyle='#b1ddf4';ctx.beginPath();ctx.ellipse(x+side*9,y+24,7,12,side*.24,0,Math.PI*2);ctx.fill();
+      }
+    }
+  }
+  ctx.beginPath();
+  if(face==='smile'){
+    animalPath(()=>{
+      ctx.moveTo(-27,70);ctx.quadraticCurveTo(0,79,27,70);
+      ctx.bezierCurveTo(18,109,-18,109,-27,70);
+    },'#f2a3b6');
+  }else if(face==='surprised'){
+    ctx.fillStyle='#9a546d';ctx.ellipse(0,83,14,18,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+  }else{
+    if(face==='angry'){ctx.moveTo(-21,84);ctx.quadraticCurveTo(0,74,21,84);}
+    else if(face==='sad'){ctx.moveTo(-19,88);ctx.quadraticCurveTo(0,64,19,88);}
+    else if(face==='wink'){ctx.moveTo(-19,75);ctx.quadraticCurveTo(1,94,23,69);}
+    else if(face==='kiss'){ctx.moveTo(-10,68);ctx.bezierCurveTo(21,62,20,78,0,78);ctx.bezierCurveTo(20,78,21,95,-10,89);}
+    else{ctx.moveTo(-11,81);ctx.lineTo(11,69);ctx.moveTo(-11,69);ctx.lineTo(11,81);}
+    ctx.stroke();
+  }
 }
 function updateAvatarPose(t){
   const dt=lastAvatarFrame===null?16:clamp(t-lastAvatarFrame,0,100);
   lastAvatarFrame=t;
-  if(!stream||t-lastAvatarSeen>900){
-    Object.assign(avatarTarget,{x:0,y:0,tilt:0,size:1,left:0,right:0});
+  if(!stream||t-lastAvatarSeen>450){
+    Object.assign(avatarTarget,restingAvatar);
   }
   const smoothing=1-Math.exp(-dt/140);
   for(const key of Object.keys(avatarPose))avatarPose[key]+=(avatarTarget[key]-avatarPose[key])*smoothing;
 }
-function drawPortalSelf(x,y,r,t){
-  ctx.save();ctx.translate(x+avatarPose.x*r*.22,y+avatarPose.y*r*.09);
-  // 충분한 여백으로 귀와 발을 포털 안에 담습니다.
-  const scale=r/440*avatarPose.size;ctx.scale(scale,scale);
-  ctx.fillStyle='rgba(24,10,35,.25)';ctx.beginPath();ctx.ellipse(0,327,119,15,0,0,Math.PI*2);ctx.fill();
-  drawBunny(t,avatarPose);ctx.restore();
+function drawPortalSelf(x,y,r,t,animal,expression){
+  ctx.save();ctx.translate(x+avatarPose.x*r*.15,y+avatarPose.y*r*.12);
+  const scale=r/(animal==='rabbit'?315:262)*avatarPose.size;ctx.scale(scale,scale);
+  drawAnimalHead(t,avatarPose,animal,expression);ctx.restore();
 }
 
-const foreground=document.createElement('canvas'),mask=document.createElement('canvas');
+const foreground=document.createElement('canvas');
 const bw=480,bh=360;
-for(const c of [foreground,mask]){c.width=bw;c.height=bh;}
-const fc=foreground.getContext('2d'),mc=mask.getContext('2d',{willReadFrequently:true});
+foreground.width=bw;foreground.height=bh;
+const fc=foreground.getContext('2d');
 let cameraReady=false,segmenter=null,processing=false;
 function drawCover(source){const scale=Math.max(w/source.width,h/source.height);ctx.save();ctx.translate(w,0);ctx.scale(-1,1);ctx.drawImage(source,(w-source.width*scale)/2,(h-source.height*scale)/2,source.width*scale,source.height*scale);ctx.restore();}
-async function prepareSegmentation(){
+function prepareSegmentation(){
  if(typeof SelfieSegmentation==='undefined')throw Error('model load');
  if(!segmenter){segmenter=new SelfieSegmentation({locateFile:file=>'https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/'+file});segmenter.setOptions({modelSelection:1});segmenter.onResults(updateBackground);}
  cameraReady=false;resetAvatar();
@@ -481,14 +584,11 @@ async function processCamera(){
 }
 function updateBackground(results){
   if(!stream)return;
-  mc.clearRect(0,0,bw,bh);mc.drawImage(results.segmentationMask,0,0,bw,bh);
-  trackAvatar(mc.getImageData(0,0,bw,bh).data);
   // 방 배경 대신 첨부 체크 배경을 사용하고, 포털이 열리기 전에는 인물만 합성합니다.
   fc.globalCompositeOperation='source-over';fc.clearRect(0,0,bw,bh);
   fc.drawImage(results.segmentationMask,0,0,bw,bh);
   fc.globalCompositeOperation='source-in';fc.drawImage(results.image,0,0,bw,bh);
   fc.globalCompositeOperation='source-over';
-  if(!cameraReady)status.textContent='변신 준비 완료! 원·별·세모·네모를 그려 토끼로 변신하세요.';
   cameraReady=true;
 }
 
@@ -516,7 +616,7 @@ canvas.addEventListener('pointermove',e=>{
 });
 canvas.addEventListener('pointerdown',e=>{if(e.button===0)addMouseDoodle(e.clientX,e.clientY,true);});
 canvas.addEventListener('pointerleave',()=>{mouseFX.lastEmit=-Infinity;});
-function drawDoodle(x,y,size,kind,turn,alpha){
+function drawDoodle(x,y,size,kind,turn,alpha,color='#fffdf4'){
   ctx.save();ctx.translate(x,y);ctx.rotate(turn);ctx.scale(size,size);
   ctx.globalAlpha=alpha;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();
   if(kind===0){
@@ -530,7 +630,7 @@ function drawDoodle(x,y,size,kind,turn,alpha){
     ctx.moveTo(-.25,.65);ctx.bezierCurveTo(-1.3,.2,-1.1,1.7,-.25,.65);
     ctx.moveTo(.8,.85);ctx.bezierCurveTo(-.25,.4,-.05,1.9,.8,.85);
   }
-  if(kind!==2){ctx.fillStyle='#fffdf4';ctx.fill();}
+  if(kind!==2){ctx.fillStyle=color;ctx.fill();}
   ctx.strokeStyle='#fffdf4';ctx.lineWidth=.48;ctx.stroke();
   ctx.strokeStyle='#464138';ctx.lineWidth=.15;ctx.stroke();ctx.restore();
 }
@@ -542,72 +642,45 @@ function drawMouseEffects(t){
   }
 }
 
-// 불꽃 포털: 시간 기반 입자로 프레임 속도에 관계없이 부드럽게 회전합니다.
-const TAU=Math.PI*2;
-function sparkNoise(n){const v=Math.sin(n*127.1+311.7)*43758.5453;return v-Math.floor(v);}
-const portalSparks=Array.from({length:300},(_,i)=>({
-  angle:sparkNoise(i+1)*TAU, phase:sparkNoise(i+401),
-  life:.32+sparkNoise(i+801)*.7,
-  speed:35+sparkNoise(i+1201)*125,
-  outward:12+sparkNoise(i+1601)*64,
-  width:.6+sparkNoise(i+2001)*1.4
-}));
-function drawFirePortal(shape,scale,t,open){
+const portalColors=['#ffc1d9','#d6c3ff','#aeece2','#fff1b9'];
+function drawPortalEffect(shape,scale,age,open){
   const radius=shape.r*scale;
   if(radius<1)return;
-  const seconds=reduceMotion?0:t*.001,strength=Math.min(1,radius/100);
-  ctx.save();ctx.translate(shape.x,shape.y);ctx.globalCompositeOperation='source-over';ctx.lineCap='round';ctx.lineJoin='round';
-  // 후광과 불꽃 모두 인식한 도형의 실제 윤곽선을 따라갑니다.
-  function contour(offset,ripple){
-    ctx.beginPath();
-    for(let i=0;i<=360;i++){
-      const u=i/360,b=portalBoundary(shape,u);
-      const jitter=ripple?(Math.sin(u*TAU*31-seconds*13)*1.4+Math.sin(u*TAU*57+seconds*19)*.8)*strength:0;
-      const d=offset+jitter,px=b.x*radius+b.nx*d,py=b.y*radius+b.ny*d;
-      if(i)ctx.lineTo(px,py);else ctx.moveTo(px,py);
+  const {x,y}=shape;
+  const seconds=reduceMotion?0:age/1000;
+  const detailScale=clamp(radius/95,.45,1);
+  const palette=ctx.createLinearGradient(x-radius,y-radius,x+radius,y+radius);
+  for(let i=0;i<portalColors.length;i++){
+    palette.addColorStop(i/(portalColors.length-1),portalColors[i]);
+  }
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+  tracePortal(shape,scale);
+  ctx.globalAlpha=open*.28;ctx.strokeStyle='#b9a6ed';ctx.lineWidth=18*detailScale;ctx.stroke();
+  ctx.globalAlpha=open*.65;ctx.strokeStyle='#62546f';ctx.lineWidth=9*detailScale;ctx.stroke();
+  ctx.globalAlpha=open;ctx.strokeStyle=palette;ctx.lineWidth=6*detailScale;ctx.stroke();
+  ctx.globalAlpha=open*.85;ctx.strokeStyle='#fffdf8';ctx.lineWidth=1.8*detailScale;
+  ctx.setLineDash([2*detailScale,7*detailScale]);ctx.lineDashOffset=-seconds*7;ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 하트와 별 사이에 진주처럼 작은 점을 띄워 도형의 바깥선을 꾸밉니다.
+  const openingPop=reduceMotion?0:Math.sin(Math.PI*open)*14;
+  const count=radius<65?12:24;
+  for(let i=0;i<count;i++){
+    const b=portalBoundary(shape,(i+.3)/count);
+    const sway=Math.sin(seconds*2+i*1.7);
+    const isCharm=i%3===0;
+    const offset=(isCharm?17:9)+(i%4)*2+sway*2+openingPop;
+    const px=x+b.x*radius+b.nx*offset*detailScale;
+    const py=y+b.y*radius+b.ny*offset*detailScale;
+    const color=portalColors[i%portalColors.length];
+    const alpha=open*(.78+.2*sway);
+    if(isCharm){
+      drawDoodle(px,py,(5.5+sway)*detailScale,(i/3)%2,sway*.22,alpha,color);
+    }else{
+      ctx.globalAlpha=alpha;ctx.fillStyle=color;ctx.strokeStyle='#fffdf8';ctx.lineWidth=1;
+      ctx.beginPath();ctx.arc(px,py,(1.5+i%3*.5)*detailScale,0,Math.PI*2);ctx.fill();ctx.stroke();
     }
-    ctx.closePath();
   }
-  ctx.globalAlpha=open*.72;ctx.strokeStyle='#3f3b33';ctx.lineWidth=9;
-  contour(0,false);ctx.stroke();
-  ctx.globalAlpha=open*.22;ctx.strokeStyle='#d8b98a';ctx.lineWidth=18;
-  ctx.shadowColor='#d5ad75';ctx.shadowBlur=25;contour(0,false);ctx.stroke();
-  ctx.globalAlpha=open;
-  for(let layer=0;layer<4;layer++){
-    contour((layer-1.5)*2.2,true);
-    ctx.strokeStyle=['#9c7d55','#d8b98a','#fffcef','#b8996e'][layer];
-    ctx.lineWidth=layer===2?1.3:1.8;ctx.shadowBlur=layer===2?12:6;ctx.stroke();
-  }
-  ctx.shadowBlur=0;
-  for(let i=0;i<64;i++){
-    const u=i*.381966+seconds*(i%3===0?-.175:.286),offset=(sparkNoise(i+77)-.5)*12*strength;
-    ctx.beginPath();
-    const length=.004+sparkNoise(i+90)*.021;
-    for(let j=0;j<=6;j++){
-      const b=portalBoundary(shape,u+j/6*length),px=b.x*radius+b.nx*offset,py=b.y*radius+b.ny*offset;
-      if(j)ctx.lineTo(px,py);else ctx.moveTo(px,py);
-    }
-    ctx.strokeStyle=i%4===0?'#fffdf2':'#9e805b';ctx.globalAlpha=open*(.35+.6*sparkNoise(i+99));
-    ctx.lineWidth=.7+sparkNoise(i+12)*1.5;ctx.stroke();
-  }
-  const sparkStep=Math.max(1,Math.ceil(portals.length/4));
-  for(let i=0;i<portalSparks.length;i+=sparkStep){
-    const s=portalSparks[i];
-    const age=(seconds+s.phase*s.life)%s.life,life=age/s.life;
-    const b=portalBoundary(shape,s.angle/TAU+(seconds-age)*.263);
-    const velocity=s.speed*strength,radial=s.outward*strength;
-    const px=b.x*radius+b.nx*radial*age+b.tx*velocity*age;
-    const py=b.y*radius+b.ny*radial*age+b.ty*velocity*age+55*age*age;
-    const q=age-Math.min(age,.018+s.phase*.045);
-    const qx=b.x*radius+b.nx*radial*q+b.tx*velocity*q;
-    const qy=b.y*radius+b.ny*radial*q+b.ty*velocity*q+55*q*q;
-    ctx.globalAlpha=open*Math.pow(1-life,1.5);ctx.lineWidth=s.width*(1-life*.65);
-    ctx.strokeStyle=life<.3?'#ffedca':life<.65?'#bb9362':'#716454';
-    ctx.beginPath();ctx.moveTo(qx,qy);ctx.lineTo(px,py);ctx.stroke();
-    if(s.phase>.72){ctx.fillStyle='#fffdf6';ctx.fillRect(px-.7,py-.7,1.4,1.4);}
-  }
-  ctx.globalAlpha=open*.48;ctx.strokeStyle='#575147';ctx.lineWidth=1.1;
-  ctx.setLineDash([3,9]);ctx.lineDashOffset=-seconds*8;contour(9,false);ctx.stroke();
   ctx.restore();
 }
 
@@ -636,15 +709,17 @@ function frame(t){
   ctx.clearRect(0,0,w,h);
   drawSceneBackground();
   if(stream&&cameraReady&&portals.length===0)drawCover(foreground);
+  trackFace(t);
   updateAvatarPose(t);
   // 먼저 만든 포털부터 그려, 겹치는 부분은 나중에 만든 포털이 앞에 놓입니다.
   for(const portal of portals){
+    if(t>=portal.nextExpressionAt)changePortalExpression(portal,t);
     const{x,y,r,born}=portal,open=clamp((t-born)/650,0,1),R=r*(1-Math.pow(1-open,3));
     ctx.save();tracePortal(portal,R/r);ctx.clip();
     drawPortalBackdrop(x,y,R);
-    drawPortalSelf(x,y,r*portal.avatarFit,t);
+    drawPortalSelf(x,y,r*portal.avatarFit,t,portal.animal,portal.expression);
     ctx.restore();
-    drawFirePortal(portal,R/r,t-born,open);
+    drawPortalEffect(portal,R/r,t-born,open);
   }
   if(points.length){
     ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();
