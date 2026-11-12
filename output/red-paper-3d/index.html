@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" class="curtain-waiting">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>붉은 종이 미로 · 3D 공간</title>
@@ -10,12 +10,29 @@
 <style>
 .camera-panel{position:absolute;top:64px;right:36px;width:260px;padding:16px;background:#21171bec;border:1px solid #725144;border-radius:8px;font-size:12px;backdrop-filter:blur(12px)}.camera-panel summary{cursor:pointer;font-size:14px}.camera-panel button{width:100%;margin-top:12px}.camera-panel p{color:#d6bba8;line-height:1.65;margin:10px 0}.camera-panel label{display:block;margin-top:13px}.camera-panel input[type=range]{width:100%;accent-color:#e4b594;margin:8px 0 0}.camera-panel output{float:right;color:#e4b594}button:disabled{opacity:.5;cursor:wait}.camera-panel .note{font-size:11px;color:#bda590}.camera-panel [hidden]{display:none}@media(max-width:600px){.camera-panel{top:130px;right:16px;width:230px;max-height:55vh;overflow:auto}}
 </style>
-<canvas id="scene" tabindex="0" aria-label="붉은 계단과 종이 인물이 있는 3D 미로. 드래그 또는 방향키로 회전하고 마우스 휠로 확대합니다."></canvas>
+<style>
+/* Folded red paper, kept outside the WebGL scene so the stage stays unchanged. */
+.curtain-waiting header,.curtain-waiting #status,.curtain-waiting .help,.curtain-waiting .controls,.curtain-waiting .camera-panel{visibility:hidden;pointer-events:none}
+.curtains{position:fixed;inset:0;z-index:5;overflow:hidden;pointer-events:none}
+.curtain{position:absolute;top:0;bottom:0;width:calc(50% + 1px);background-color:#661622;background-image:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27317%27 height=%27521%27%3E%3Cpath fill=%27%23be5140%27 opacity=%27.44%27 d=%27M9 77l109-29 35 131-31-3-8 9-22-4-59 17zM188 357l97-20 22 103-16-4-9 7-73 20z%27/%3E%3Cpath fill=%27%2333010e%27 opacity=%27.37%27 d=%27M95 230l110 13-9 43-9-2-14 9-93-15zM241 61l58 21-18 70-57-16z%27/%3E%3Cpath fill=%27none%27 stroke=%27%23e3a27b%27 opacity=%27.48%27 d=%27M33 198l59-17 22 4 8-9 31 3M209 463l73-20 9-7 16 4%27/%3E%3C/svg%3E"),repeating-linear-gradient(90deg,#3b0c15 0 19px,#73202a 19px 48px,#a13c39 48px 78px,#bd6250 78px 79px,#59131e 79px 102px,#80242a 102px 129px,#461019 129px 151px);box-shadow:0 0 24px #100306aa;transition:transform 2.6s cubic-bezier(.65,0,.25,1);pointer-events:auto}
+.curtain::after{content:"";position:absolute;inset:0;opacity:.72;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.48 .73' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23fff' filter='url(%23grain)' d='M0 0h180v180H0z'/%3E%3C/svg%3E");mix-blend-mode:soft-light}
+.curtain-left{left:0;border-right:2px solid #b7554c77}
+.curtain-right{right:0;border-left:2px solid #b7554c77;background-position:right top}
+.curtain-opening .curtain-left{transform:translateX(calc(-100% + clamp(14px,2.4vw,30px)))}
+.curtain-opening .curtain-right{transform:translateX(calc(100% - clamp(14px,2.4vw,30px)))}
+html:not(.curtain-waiting) .curtain{pointer-events:none}
+.error{z-index:6}
+@media(prefers-reduced-motion:reduce){.curtain{transition-duration:.01s}}
+</style>
+<canvas id="scene" inert tabindex="0" aria-label="붉은 계단과 종이 인물이 있는 3D 미로. 드래그 또는 방향키로 회전하고 마우스 휠로 확대합니다."></canvas>
+<div class="curtains" aria-hidden="true"><div class="curtain curtain-left"></div><div class="curtain curtain-right"></div></div>
 <header><small>PAPER LABYRINTH / 02</small><h1>붉은 종이 미로</h1><p>오리고, 겹치고, 길을 잃고</p></header>
 <div id="status" role="status">공간을 준비하고 있어요</div>
 <details class="camera-panel" open><summary>웹캠 인물 · 초록 배경 제거</summary>
 <button id="camera-on">카메라 켜기</button><button id="camera-off" hidden>카메라 끄기</button>
 <p id="camera-status" role="status">카메라를 켜면 중앙에 내 모습이 나타나요.</p>
+<button id="hand-on" disabled>손으로 집기 연습</button><button id="hand-off" hidden>손 조작 끝내기</button>
+<p id="hand-status" role="status">카메라를 켠 뒤 손으로 집기를 시작하세요.</p>
 <label for="key-strength">초록색 제거 강도 <output id="key-value">55</output></label><input id="key-strength" type="range" min="0" max="100" value="55">
 <label for="key-softness">가장자리 부드럽게 <output id="softness-value">35</output></label><input id="key-softness" type="range" min="0" max="100" value="35">
 <p class="note">초록색 천 앞에서 머리부터 발끝까지 나오게 서 주세요. 초록색 옷도 함께 지워집니다.</p>
@@ -24,5 +41,9 @@
 <div class="help">마우스를 누른 채 움직여 둘러보세요<br>휠 · 확대 / 축소 &nbsp; | &nbsp; 방향키 · 회전</div>
 <div class="controls"><button id="out" aria-label="축소">−</button><button id="in" aria-label="확대">＋</button><button id="home">처음 시점</button></div>
 <div id="error" class="error" role="alert"></div>
-<script src="scene.js"></script>
+<div id="hand-cursor" hidden aria-hidden="true"></div><div id="grab-target" hidden aria-hidden="true"></div>
+<style>
+#hand-cursor,#grab-target{position:absolute;pointer-events:none;border-radius:50%;transform:translate(-50%,-50%);z-index:3}#hand-cursor{width:24px;height:24px;border:2px solid #f5e7cb;background:#c79b6133}#hand-cursor.ready{border-color:#91e3c1;background:#70d9b955}#hand-cursor.holding{background:#f6d27caa;border-color:#ffe9a5;width:18px;height:18px}#grab-target{width:70px;height:70px;border:2px dashed #efd081;box-shadow:0 0 20px #e6b96433}#grab-target[hidden],#hand-cursor[hidden]{display:none}
+</style>
+<script type="module" src="scene.js"></script>
 </html>

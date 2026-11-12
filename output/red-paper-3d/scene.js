@@ -1,7 +1,19 @@
 'use strict';
+import {PinchGrab,handSample,videoToWorld,projectPoint} from './hand-interaction.mjs';
 // Small native WebGL scene: no external packages or network assets.
 (() => {
 const canvas=document.querySelector('#scene'), status=document.querySelector('#status');
+function openCurtains(){
+ const root=document.documentElement,left=document.querySelector('.curtain-left');
+ const finish=e=>{
+  if(e.propertyName!=='transform')return;
+  root.classList.remove('curtain-waiting');canvas.inert=false;
+  left.removeEventListener('transitionend',finish);left.removeEventListener('transitioncancel',finish);
+ };
+ left.addEventListener('transitionend',finish);left.addEventListener('transitioncancel',finish);
+ // Let the textured stage paint behind the closed paper before revealing it.
+ requestAnimationFrame(()=>requestAnimationFrame(()=>root.classList.add('curtain-opening')));
+}
 const fail=message=>document.querySelector('#error').textContent=message;
 const gl=canvas.getContext('webgl',{antialias:true,alpha:false});
 if(!gl){fail('이 Chrome에서 3D 화면을 열 수 없습니다. 다른 Chrome 창에서 다시 열어 주세요.');return;}
@@ -301,6 +313,13 @@ const walkers=routes.map((route,index)=>{
 function updateWalkers(dt){
  for(const actor of walkers){
   actor.moving=0;
+  if(actor.held)continue;
+  if(actor.returning){
+   const r=actor.returning;r.elapsed=Math.min(.65,r.elapsed+dt);const t=r.elapsed/.65,e=t*t*(3-2*t);
+   actor.position=r.from.map((n,i)=>n+(r.to[i]-n)*e);
+   if(t===1){actor.returning=null;actor.pause=.6;}
+   continue;
+  }
   if(actor.pause>0){actor.pause-=dt;continue;}
   const remaining=actor.target-actor.distance;
   if(Math.abs(remaining)<.015){
@@ -385,11 +404,93 @@ paper.onload=()=>{
  gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,atlas);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,paper);
  if((paper.width&(paper.width-1))===0&&(paper.height&(paper.height-1))===0){gl.generateMipmap(gl.TEXTURE_2D);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);}
  render();
+ openCurtains();
 };
 paper.onerror=()=>fail('종이 무늬를 불러오지 못했어요. 새로고침해 주세요.');paper.src='collage-paper.png';
 let imageReady=false,cameraStream=null,cameraRequest=0,lastVideoTime=-1,videoAspect=0;
 const video=document.createElement('video');video.muted=true;video.autoplay=true;video.playsInline=true;
 const cameraOn=document.querySelector('#camera-on'),cameraOff=document.querySelector('#camera-off'),cameraStatus=document.querySelector('#camera-status');
+const handOn=document.querySelector('#hand-on'),handOff=document.querySelector('#hand-off'),handStatus=document.querySelector('#hand-status');
+const handCursor=document.querySelector('#hand-cursor'),grabTarget=document.querySelector('#grab-target');
+const practice=walkers[7],gesture=new PinchGrab();
+let handMode=false,handWorker=null,handReady=false,handBusy=false,handTimer=null,lastHandFrame=-1,lastHandSubmit=0,lastHandResult=0,handPoint=null,currentVP=null,cameraEye=null,savedView=null;
+function returnPractice(){
+ if(!practice.held)return;practice.held=false;
+ const route=practice.route;let best=Infinity,bestDistance=0;
+ for(let i=1;i<route.points.length;i++){
+  const a=route.points[i-1],b=route.points[i],dx=b[0]-a[0],dz=b[2]-a[2];
+  const t=Math.max(0,Math.min(1,((practice.position[0]-a[0])*dx+(practice.position[2]-a[2])*dz)/(dx*dx+dz*dz||1)));
+  const d=(practice.position[0]-a[0]-dx*t)**2+(practice.position[2]-a[2]-dz*t)**2;
+  if(d<best){best=d;bestDistance=route.lengths[i-1]+t*(route.lengths[i]-route.lengths[i-1]);}
+ }
+ practice.distance=bestDistance;practice.target=bestDistance<route.total/2?route.total:0;
+ practice.returning={from:[...practice.position],to:routePosition(route,bestDistance),elapsed:0};
+}
+function stopHandInteraction(message='손 조작을 마쳤어요.'){
+ returnPractice();gesture.reset();handMode=false;handReady=false;handBusy=false;handPoint=null;
+ clearTimeout(handTimer);if(handWorker)handWorker.terminate();handWorker=null;
+ handCursor.hidden=true;grabTarget.hidden=true;handOn.hidden=false;handOn.disabled=!imageReady;handOff.hidden=true;handStatus.textContent=message;
+ for(const id of ['#home','#in','#out'])document.querySelector(id).disabled=false;
+ if(savedView){[yaw,pitch,distance]=savedView;savedView=null;}
+}
+function receiveHand(points,time){
+ const now=performance.now();lastHandResult=now;
+ const sample=handSample(points,videoAspect);
+ let near=false;
+ if(sample&&currentVP&&videoAspect){
+  const point=videoToWorld(sample,videoAspect);
+  handPoint=handPoint?handPoint.map((v,i)=>v+(point[i]-v)*.5):point;
+  const cursor=projectPoint(handPoint,currentVP,innerWidth,innerHeight);
+  const target=projectPoint([practice.position[0],practice.position[1]+practice.scale*.68*1.7,practice.position[2]],currentVP,innerWidth,innerHeight);
+  near=!!(cursor&&target&&!practice.returning&&Math.hypot(cursor[0]-target[0],cursor[1]-target[1])<48);
+ }else handPoint=null;
+ const action=gesture.update(sample,near,time);
+ if(action==='grab'){practice.held=true;practice.moving=0;practice.facing=1;handStatus.textContent='잡았어요! 손을 움직이고, 손가락을 벌려 내려놓으세요.';}
+ if(action==='release'){returnPractice();handStatus.textContent=sample?'내려놓았어요. 친구가 발판으로 돌아갑니다.':'손이 보이지 않아 친구를 발판으로 돌려보냈어요.';}
+ if(!practice.held&&action!=='release')handStatus.textContent=sample?(near?'엄지와 검지를 오므려 친구를 집어 보세요.':'손끝의 원을 금색 표시 친구에게 가져가세요.'):'손바닥과 손가락이 카메라에 보이게 들어 주세요.';
+ handCursor.className=practice.held?'holding':near?'ready':'';
+}
+handOn.onclick=()=>{
+ if(!imageReady){handStatus.textContent='먼저 카메라 영상을 켜 주세요.';return;}
+ handMode=true;gesture.reset();savedView=[yaw,pitch,distance];yaw=0;pitch=0;distance=26;drag=null;
+ for(const id of ['#home','#in','#out'])document.querySelector(id).disabled=true;
+ handOn.hidden=true;handOff.hidden=false;handStatus.textContent='손 인식을 준비하고 있어요…';lastHandResult=performance.now();lastHandFrame=-1;lastHandSubmit=0;
+ const worker=new Worker('./hand-worker.mjs',{type:'module'});handWorker=worker;
+ const failHand=()=>{if(handWorker===worker)stopHandInteraction('손 인식을 준비하지 못했어요. 손으로 집기를 다시 눌러 주세요.');};
+ handTimer=setTimeout(failHand,30000);worker.onerror=failHand;
+ worker.onmessage=({data})=>{
+  if(handWorker!==worker)return;
+  if(data.type==='ready'){clearTimeout(handTimer);handReady=true;handStatus.textContent='금색 표시 친구에게 손을 가져가 엄지와 검지를 오므리세요.';}
+  else if(data.type==='hand'){handBusy=false;receiveHand(data.points,data.time);}
+  else if(data.type==='error')failHand();
+ };
+ worker.postMessage({type:'init'});
+};
+handOff.onclick=()=>stopHandInteraction();
+async function submitHandFrame(now){
+ if(!handMode||!handReady||handBusy||!cameraStream||video.readyState<2||now-lastHandSubmit<66||video.currentTime===lastHandFrame)return;
+ handBusy=true;lastHandSubmit=now;lastHandFrame=video.currentTime;const worker=handWorker;
+ try{
+  const image=await createImageBitmap(video,{resizeWidth:640,resizeHeight:Math.max(1,Math.round(640/videoAspect))});
+  if(handWorker!==worker){image.close();return;}
+  worker.postMessage({type:'frame',image,time:now},[image]);
+ }catch(error){if(handWorker===worker)stopHandInteraction('손 영상을 읽지 못했어요. 손으로 집기를 다시 눌러 주세요.');}
+}
+function updateHandOverlay(){
+ if(!handMode)return;
+ if(handReady&&performance.now()-lastHandResult>550)receiveHand(null,performance.now());
+ if(practice.held&&handPoint&&cameraEye){
+  // Intersect the visible fingertip ray with a plane just in front of the person.
+  const z=1.05,t=(z-cameraEye[2])/(handPoint[2]-cameraEye[2]);
+  const held=[cameraEye[0]+(handPoint[0]-cameraEye[0])*t,cameraEye[1]+(handPoint[1]-cameraEye[1])*t-practice.scale*.68*1.85,z];
+  practice.position=practice.position.map((v,i)=>v+(held[i]-v)*.35);
+ }
+ const cursor=handPoint&&projectPoint(handPoint,currentVP,innerWidth,innerHeight);
+ handCursor.hidden=!cursor;if(cursor){handCursor.style.left=cursor[0]+'px';handCursor.style.top=cursor[1]+'px';}
+ const target=projectPoint([practice.position[0],practice.position[1]+practice.scale*.68*1.7,practice.position[2]],currentVP,innerWidth,innerHeight);
+ grabTarget.hidden=!target||practice.held||!!practice.returning;
+ if(target){grabTarget.style.left=target[0]+'px';grabTarget.style.top=target[1]+'px';}
+}
 const keyStrength=document.querySelector('#key-strength'),keySoftness=document.querySelector('#key-softness');
 status.textContent='산책하는 친구 10 · 떠다니는 친구 4 · 드래그로 회전';
 function updateKey(){
@@ -402,6 +503,7 @@ function stopCamera(message='카메라를 껐어요. 다시 켜서 이어갈 수
  cameraRequest++;const stream=cameraStream;cameraStream=null;imageReady=false;
  if(stream)stream.getTracks().forEach(track=>track.stop());
  video.pause();video.srcObject=null;lastVideoTime=-1;videoAspect=0;shadowDirty=true;
+ stopHandInteraction('카메라를 켠 뒤 손으로 집기를 시작하세요.');
  cameraOn.disabled=false;cameraOn.hidden=false;cameraOn.textContent='카메라 켜기';cameraOff.hidden=true;cameraStatus.textContent=message;
 }
 cameraOn.onclick=async()=>{
@@ -431,7 +533,7 @@ function updateVideoTexture(){
   gl.bindBuffer(gl.ARRAY_BUFFER,figure.b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(vertices),gl.DYNAMIC_DRAW);videoAspect=aspect;
  }
  gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
- gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,video);lastVideoTime=video.currentTime;imageReady=true;shadowDirty=true;
+ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,video);lastVideoTime=video.currentTime;imageReady=true;handOn.disabled=false;shadowDirty=true;
 }
 function norm(v){const l=Math.hypot(...v);return v.map(x=>x/l);}
 function cross(a,b){return [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];}
@@ -467,13 +569,14 @@ function render(){
  const view=lookAt(eye,target);
  const f=1/Math.tan(Math.PI/8.5),near=.1,far=150;
  const projection=[f/(w/h),0,0,0,0,f,0,0,0,0,(far+near)/(near-far),-1,0,0,2*far*near/(near-far),0];
- gl.uniformMatrix4fv(loc.uVP,false,multiply(projection,view));gl.clearColor(.026,.018,.027,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+ currentVP=multiply(projection,view);cameraEye=eye;updateHandOverlay();
+ gl.uniformMatrix4fv(loc.uVP,false,currentVP);gl.clearColor(.026,.018,.027,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
  gl.uniform4f(loc.uActor,0,0,0,1);gl.uniform3f(loc.uWalk,0,1,0);
  gl.uniform1f(loc.uPuppet,0);gl.uniform1f(loc.uPaper,0);drawWorld();
  // Soft contact shadows follow the feet, clipped to the depth-tested steps.
  gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);
  gl.uniform1f(loc.uPaper,2);bind(contact);
- for(const actor of walkers){gl.uniform4f(loc.uActor,actor.position[0],actor.position[1]-.012,actor.position[2],.30*actor.scale);gl.drawArrays(gl.TRIANGLES,0,contact.count);}
+ for(const actor of walkers){if(actor.held||actor.returning)continue;gl.uniform4f(loc.uActor,actor.position[0],actor.position[1]-.012,actor.position[2],.30*actor.scale);gl.drawArrays(gl.TRIANGLES,0,contact.count);}
  if(imageReady){gl.uniform4f(loc.uActor,0,.273,.65,.95);gl.drawArrays(gl.TRIANGLES,0,contact.count);}
  gl.depthMask(true);gl.disable(gl.BLEND);gl.uniform1f(loc.uPaper,0);gl.uniform1f(loc.uPuppet,1);
  bind(walkingVisitor);
@@ -487,20 +590,20 @@ function render(){
  if(imageReady){gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.uniform1f(loc.uPaper,1);gl.uniform1i(loc.uImage,0);bind(figure);gl.drawArrays(gl.TRIANGLES,0,figure.count);gl.disable(gl.BLEND);}
 }
 let drag=null;
-canvas.addEventListener('pointerdown',e=>{if(e.button!==0)return;canvas.focus();drag={id:e.pointerId,x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);});
+canvas.addEventListener('pointerdown',e=>{if(handMode||e.button!==0)return;canvas.focus();drag={id:e.pointerId,x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);});
 canvas.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;yaw-=(e.clientX-drag.x)*.006;pitch=Math.max(-.16,Math.min(1.25,pitch+(e.clientY-drag.y)*.005));drag.x=e.clientX;drag.y=e.clientY;render();});
 for(const event of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(event,()=>drag=null);
-function zoom(factor){distance=Math.max(13,Math.min(48,distance*factor));render();}
+function zoom(factor){if(handMode)return;distance=Math.max(13,Math.min(48,distance*factor));render();}
 canvas.addEventListener('wheel',e=>{e.preventDefault();zoom(Math.exp(Math.max(-100,Math.min(100,e.deltaY))*.0015));},{passive:false});
-function reset(){yaw=.20;pitch=.18;distance=26;render();}
+function reset(){if(handMode)return;yaw=.20;pitch=.18;distance=26;render();}
 document.querySelector('#home').onclick=reset;document.querySelector('#in').onclick=()=>zoom(.85);document.querySelector('#out').onclick=()=>zoom(1.18);
-canvas.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','-','Home'].includes(e.key))return;e.preventDefault();if(e.key==='ArrowLeft')yaw-=.12;if(e.key==='ArrowRight')yaw+=.12;if(e.key==='ArrowUp')pitch=Math.min(1.25,pitch+.09);if(e.key==='ArrowDown')pitch=Math.max(-.16,pitch-.09);if(e.key==='+')zoom(.9);if(e.key==='-')zoom(1.1);if(e.key==='Home')reset();render();});
+canvas.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','-','Home'].includes(e.key))return;e.preventDefault();if(handMode)return;if(e.key==='ArrowLeft')yaw-=.12;if(e.key==='ArrowRight')yaw+=.12;if(e.key==='ArrowUp')pitch=Math.min(1.25,pitch+.09);if(e.key==='ArrowDown')pitch=Math.max(-.16,pitch-.09);if(e.key==='+')zoom(.9);if(e.key==='-')zoom(1.1);if(e.key==='Home')reset();render();});
 window.addEventListener('resize',render);
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();stopCamera();fail('3D 화면이 잠시 중단됐어요. 새로고침하면 다시 열립니다.');});
 let previousFrame=performance.now();
 function animate(now){
  const dt=Math.min(.05,Math.max(0,(now-previousFrame)/1000));previousFrame=now;
- if(!document.hidden&&!gl.isContextLost()){backgroundTime+=dt;updateWalkers(dt);render();}
+ if(!document.hidden&&!gl.isContextLost()){backgroundTime+=dt;updateWalkers(dt);render();submitHandFrame(now);}
  requestAnimationFrame(animate);
 }
 requestAnimationFrame(animate);

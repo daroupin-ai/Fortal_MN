@@ -3,7 +3,9 @@ const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
 const files = {'/':'index.html','/index.html':'index.html','/scene.js':'scene.js','/person.png':'person.png','/collage-paper.png':'collage-paper.png'};
-const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.png':'image/png'};
+for(const name of ['hand-interaction.mjs','hand-worker.mjs','hand-check.html','hand-check.mjs'])files['/'+name]=name;
+for(const name of ['vision_bundle.mjs','hand_landmarker.task','wasm/vision_wasm_internal.js','wasm/vision_wasm_internal.wasm','wasm/vision_wasm_module_internal.js','wasm/vision_wasm_module_internal.wasm'])files['/vendor/mediapipe/'+name]='vendor/mediapipe/'+name;
+const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.wasm':'application/wasm','.task':'application/octet-stream','.png':'image/png'};
 http.createServer((req,res)=>{
   const filename=files[req.url.split('?')[0]];
   if(!filename){res.writeHead(404);res.end();return;}
