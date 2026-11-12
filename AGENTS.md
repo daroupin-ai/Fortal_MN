@@ -23,10 +23,13 @@
 - 온라인 배포나 외부 서비스 연결은 요청받았을 때만 진행한다.
 
 ## 스킬
-- 이 프로젝트에 설치한 스킬은 `karpathy-guidelines` 하나다.
+- 이 프로젝트에 설치한 스킬은 `karpathy-guidelines`, `unreal-engine-mcp-codex` 두 개다.
 - 코드 작성·검토·수정 전에는 `.agents/skills/karpathy-guidelines/SKILL.md`를 읽고 적용한다.
 - 출처: https://github.com/multica-ai/andrej-karpathy-skills/tree/2c606141936f1eeef17fa3043a72095b4765b9c2/skills/karpathy-guidelines
 - 지정 버전: `2c606141936f1eeef17fa3043a72095b4765b9c2`
+- 언리얼 연결·편집 작업에는 `.agents/skills/unreal-engine-mcp-codex/SKILL.md`를 읽고 적용한다. 스킬 설치와 실제 언리얼 연결 완료는 구분한다.
+- 언리얼 스킬 출처: https://github.com/WildCake/unreal-engine-mcp-codex/tree/559ae98e8dd237badde57805c118315e6cbed97f/skills/unreal-engine-mcp-codex
+- 언리얼 스킬 지정 버전: `559ae98e8dd237badde57805c118315e6cbed97f` (UE 5.8 이상용 커뮤니티 스킬)
 - 추가 스킬은 실제로 필요해질 때 이유를 쉽게 설명하고 추천한다. 자동으로 설치하지 않는다.
 
 ## 첫 실습 계획 — 다음 요청부터

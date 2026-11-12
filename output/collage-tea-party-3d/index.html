@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>이상한 티파티 · 콜라주 3D</title>
+<link rel="icon" href="data:,">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#dae0ca;color:#254b4f;font-family:Arial,"Malgun Gothic",sans-serif;overflow:hidden}canvas{display:block;width:100vw;height:100vh;touch-action:none;cursor:grab}canvas:active{cursor:grabbing}header{position:absolute;top:26px;left:28px;pointer-events:none;background:#fff6e4ed;padding:19px 25px 20px;box-shadow:3px 4px 0 #38565c38;transform:rotate(-1.3deg);border:1px solid #d3cab4}small{color:#a74472;letter-spacing:3px;font-size:10px}h1{font-size:26px;font-weight:500;letter-spacing:-1px;margin:10px 0 8px}header p{font-size:12px;color:#547471;margin:0}.help{position:absolute;bottom:27px;left:28px;color:#254b4f;font-size:12px;line-height:1.8;pointer-events:none;background:#fff6e4e8;padding:10px 16px;border-radius:2px}.controls{position:absolute;bottom:28px;right:28px;display:flex;gap:7px}button{border:1px solid #739a98;color:#244e50;background:#fff8e8f2;padding:12px 17px;border-radius:3px;font:inherit;font-size:12px;cursor:pointer}button:hover{background:#cde3d4}button:focus-visible,canvas:focus-visible{outline:2px solid #b94d7f;outline-offset:-3px}#status{position:absolute;top:29px;right:28px;color:#315c5a;background:#fff6e4e8;padding:10px 14px;font-size:11px;letter-spacing:.3px}.error{position:absolute;inset:35% 15%;background:#fff6e4;padding:25px;line-height:1.7}.error:empty{display:none}@media(max-width:600px){header{top:15px;left:16px;padding:13px 17px}h1{font-size:22px}.help{left:16px;bottom:78px;font-size:11px}.controls{right:16px;bottom:18px}#status{top:auto;bottom:139px;right:16px;font-size:10px}}
+</style>
+<canvas id="scene" tabindex="0" aria-label="꽃무늬 벽과 둥근 티테이블이 있는 콜라주 3D 공간. 드래그 또는 방향키로 회전하고 마우스 휠로 확대합니다."></canvas>
+<header><small>COLLAGE / TEA PARTY</small><h1>이상한 티파티</h1><p>꽃무늬 조각 사이로, 작은 손님들</p></header>
+<div id="status" role="status">티파티를 준비하고 있어요</div>
+<div class="help">마우스를 누른 채 움직여 둘러보세요<br>휠 · 확대 / 축소 &nbsp; | &nbsp; 방향키 · 회전</div>
+<div class="controls"><button id="out" aria-label="축소">−</button><button id="in" aria-label="확대">＋</button><button id="home">처음 시점</button></div>
+<div id="error" class="error" role="alert"></div>
+<script src="scene.js"></script>
+</html>

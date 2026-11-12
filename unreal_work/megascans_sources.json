@@ -1,0 +1,43 @@
+{
+  "status": "downloaded_and_imported_preview_pending",
+  "budget": "free_only",
+  "target_project": "C:/Users/Nipa/Documents/Unreal Projects/MN_Lee_AI/MN_Lee_AI.uproject",
+  "target_map": "/Game/SmallForest/Forest_Photoreal",
+  "backup": "backups/Forest_CameraView_before_megascans.umap",
+  "sources": [
+    {
+      "role": "trees",
+      "name": "European Black Alder",
+      "url": "https://www.fab.com/listings/9de7ce19-5813-42d2-a5f0-5e6447006f72",
+      "free_verified": true,
+      "downloaded": true,
+      "status": "downloaded_and_imported_via_Fab"
+    },
+    {
+      "role": "ground",
+      "name": "Forest Terrain",
+      "url": "https://www.fab.com/listings/8a8981c4-bb94-4184-84b7-6c70d7c75ef1",
+      "free_verified": true,
+      "downloaded": true,
+      "file": "sources/forest_terrain_tletcalfa_high"
+    },
+    {
+      "role": "rock",
+      "name": "Nordic Forest Cluster Rock Small",
+      "url": "https://www.fab.com/listings/f186c225-178a-482b-a122-5508a318a4f0",
+      "free_verified": true,
+      "downloaded": true,
+      "file": "sources/nordic_forest_cluster_rock_small_xjijdiz_high"
+    },
+    {
+      "role": "understory",
+      "name": "Fern",
+      "url": "https://www.fab.com/listings/edc17ea3-2f18-41e7-85a1-e97a9f1097f3",
+      "free_verified": true,
+      "downloaded": true,
+      "file": "sources/fern_sbsly_high"
+    }
+  ],
+  "license_reference": "https://www.fab.com/eula",
+  "note": "All four free Quixel sources imported. Original Forest_CameraView map preserved; new Forest_Photoreal map created."
+}

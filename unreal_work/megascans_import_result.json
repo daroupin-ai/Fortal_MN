@@ -1,0 +1,97 @@
+{
+  "Terrain": {
+    "meshes": [
+      {
+        "path": "/Game/SmallForest/Megascans/Terrain/Forest_Terrain_tletcalfa_High.Forest_Terrain_tletcalfa_High",
+        "extent": [
+          82.79130554199219,
+          126.66280746459961,
+          8.862940549850464
+        ]
+      }
+    ],
+    "material": "/Game/SmallForest/Megascans/Terrain/M_Terrain.M_Terrain"
+  },
+  "Rock": {
+    "meshes": [
+      {
+        "path": "/Game/SmallForest/Megascans/Rock/Nordic_Forest_Cluster_Rock_Small_xjijdiz_High.Nordic_Forest_Cluster_Rock_Small_xjijdiz_High",
+        "extent": [
+          96.6530532836914,
+          82.81668090820312,
+          19.02192085981369
+        ]
+      }
+    ],
+    "material": "/Game/SmallForest/Megascans/Rock/M_Rock.M_Rock"
+  },
+  "Fern": {
+    "meshes": [
+      {
+        "path": "/Game/SmallForest/Megascans/Fern/Fern_sbslY_High_sbslY_VarA_LOD0.Fern_sbslY_High_sbslY_VarA_LOD0",
+        "extent": [
+          68.24021339416504,
+          74.51341247558594,
+          54.43868064880371
+        ]
+      },
+      {
+        "path": "/Game/SmallForest/Megascans/Fern/Fern_sbslY_High_sbslY_VarB_LOD0.Fern_sbslY_High_sbslY_VarB_LOD0",
+        "extent": [
+          61.27836799621582,
+          60.96054458618164,
+          37.968698501586914
+        ]
+      },
+      {
+        "path": "/Game/SmallForest/Megascans/Fern/Fern_sbslY_High_sbslY_VarC_LOD0.Fern_sbslY_High_sbslY_VarC_LOD0",
+        "extent": [
+          81.81904602050781,
+          68.58439445495605,
+          43.45750713348389
+        ]
+      },
+      {
+        "path": "/Game/SmallForest/Megascans/Fern/Fern_sbslY_High_sbslY_VarD_LOD0.Fern_sbslY_High_sbslY_VarD_LOD0",
+        "extent": [
+          55.9351921081543,
+          44.63088893890381,
+          34.05277633666992
+        ]
+      },
+      {
+        "path": "/Game/SmallForest/Megascans/Fern/Fern_sbslY_High_sbslY_VarE_LOD0.Fern_sbslY_High_sbslY_VarE_LOD0",
+        "extent": [
+          70.39188003540039,
+          68.9471263885498,
+          49.314096450805664
+        ]
+      },
+      {
+        "path": "/Game/SmallForest/Megascans/Fern/Fern_sbslY_High_sbslY_VarF_LOD0.Fern_sbslY_High_sbslY_VarF_LOD0",
+        "extent": [
+          49.978763580322266,
+          53.38801956176758,
+          47.983083724975586
+        ]
+      },
+      {
+        "path": "/Game/SmallForest/Megascans/Fern/Fern_sbslY_High_sbslY_VarG_LOD0.Fern_sbslY_High_sbslY_VarG_LOD0",
+        "extent": [
+          31.230032920837402,
+          39.46050262451172,
+          27.022443771362305
+        ]
+      },
+      {
+        "path": "/Game/SmallForest/Megascans/Fern/Fern_sbslY_High_sbslY_VarH_LOD0.Fern_sbslY_High_sbslY_VarH_LOD0",
+        "extent": [
+          17.19319248199463,
+          20.13951873779297,
+          23.843758583068848
+        ]
+      }
+    ],
+    "material": "/Game/SmallForest/Megascans/Fern/M_Fern.M_Fern"
+  }
+}

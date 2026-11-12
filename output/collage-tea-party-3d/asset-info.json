@@ -1,0 +1,9 @@
+{
+  "asset": "person.png",
+  "tool": "built-in image_gen",
+  "source": "C:/Users/Nipa/.codex/generated_images/01a1cd97-7b80-7fa2-9190-acbf3451381f/exec-0f94f86f-3b43-4468-b115-c665c74a51ac.png",
+  "prompt": "Use case: background-extraction. Create a transparent-background cutout asset for a 3D paper theatre. Extract ONLY the full-body woman and the small cream mascot dangling from the blue ribbon in her raised hand from the supplied image. Preserve exactly her recognizable face, hair, smile, natural anatomy, pose, black sweater, charcoal trousers, black shoes, original photographic paper-collage appearance with narrow cream paper border. Remove ALL red stairs, architecture, floor, lace, black backdrop and all other mascots. Truly transparent alpha background including gaps between arms and body and legs. Keep entire woman head to toe, both shoes fully visible. Center her full-height with small transparent padding, portrait aspect ratio, no ground shadow, no text. Do not redesign her.",
+  "viewer": "http://127.0.0.1:4323/",
+  "start_command": "node start.cjs",
+  "scope": "Separate copy of red-paper-3d. Orbitable pastel collage tea party with floral wallpaper panels, rounded chairs, cake, tea set, balloons, photographic person cutout and ten independently wandering paper mascots. Original folder unchanged."
+}

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>붉은 종이 미로 · 3D 공간</title>
+<link rel="icon" href="data:,">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#100b0c;color:#f4e6ce;font-family:Arial,"Malgun Gothic",sans-serif;overflow:hidden}canvas{display:block;width:100vw;height:100vh;touch-action:none;cursor:grab}canvas:active{cursor:grabbing}header{position:absolute;top:32px;left:36px;pointer-events:none}small{color:#c99b82;letter-spacing:4px;font-size:11px}h1{font-size:27px;font-weight:500;letter-spacing:-1px;margin:12px 0}header p{font-size:13px;color:#d6bba8;margin:0}.help{position:absolute;bottom:28px;left:36px;color:#c9ae9d;font-size:12px;line-height:1.8;pointer-events:none}.controls{position:absolute;bottom:30px;right:36px;display:flex;gap:8px}button{border:1px solid #725144;color:#f4e6ce;background:#221619d9;padding:12px 17px;border-radius:4px;font:inherit;font-size:12px;cursor:pointer}button:hover{background:#60312d}button:focus-visible,canvas:focus-visible{outline:2px solid #edd1a4;outline-offset:-3px}#status{position:absolute;top:34px;right:36px;color:#c2a18c;font-size:11px;letter-spacing:1px}.error{position:absolute;inset:35% 15%;background:#28171b;padding:25px;line-height:1.7}.error:empty{display:none}@media(max-width:600px){header{top:22px;left:22px}h1{font-size:22px}.help{left:22px;bottom:82px}.controls{right:22px;bottom:20px}#status{top:auto;bottom:145px;right:22px}}
+</style>
+<style>
+.camera-panel{position:absolute;top:64px;right:36px;width:260px;padding:16px;background:#21171bec;border:1px solid #725144;border-radius:8px;font-size:12px;backdrop-filter:blur(12px)}.camera-panel summary{cursor:pointer;font-size:14px}.camera-panel button{width:100%;margin-top:12px}.camera-panel p{color:#d6bba8;line-height:1.65;margin:10px 0}.camera-panel label{display:block;margin-top:13px}.camera-panel input[type=range]{width:100%;accent-color:#e4b594;margin:8px 0 0}.camera-panel output{float:right;color:#e4b594}button:disabled{opacity:.5;cursor:wait}.camera-panel .note{font-size:11px;color:#bda590}.camera-panel [hidden]{display:none}@media(max-width:600px){.camera-panel{top:130px;right:16px;width:230px;max-height:55vh;overflow:auto}}
+</style>
+<canvas id="scene" tabindex="0" aria-label="붉은 계단과 종이 인물이 있는 3D 미로. 드래그 또는 방향키로 회전하고 마우스 휠로 확대합니다."></canvas>
+<header><small>PAPER LABYRINTH / 02</small><h1>붉은 종이 미로</h1><p>오리고, 겹치고, 길을 잃고</p></header>
+<div id="status" role="status">공간을 준비하고 있어요</div>
+<details class="camera-panel" open><summary>웹캠 인물 · 초록 배경 제거</summary>
+<button id="camera-on">카메라 켜기</button><button id="camera-off" hidden>카메라 끄기</button>
+<p id="camera-status" role="status">카메라를 켜면 중앙에 내 모습이 나타나요.</p>
+<label for="key-strength">초록색 제거 강도 <output id="key-value">55</output></label><input id="key-strength" type="range" min="0" max="100" value="55">
+<label for="key-softness">가장자리 부드럽게 <output id="softness-value">35</output></label><input id="key-softness" type="range" min="0" max="100" value="35">
+<p class="note">초록색 천 앞에서 머리부터 발끝까지 나오게 서 주세요. 초록색 옷도 함께 지워집니다.</p>
+<p class="note">영상은 이 PC에서만 처리합니다. 녹화·외부 전송·마이크 사용 없음.</p>
+</details>
+<div class="help">마우스를 누른 채 움직여 둘러보세요<br>휠 · 확대 / 축소 &nbsp; | &nbsp; 방향키 · 회전</div>
+<div class="controls"><button id="out" aria-label="축소">−</button><button id="in" aria-label="확대">＋</button><button id="home">처음 시점</button></div>
+<div id="error" class="error" role="alert"></div>
+<script src="scene.js"></script>
+</html>

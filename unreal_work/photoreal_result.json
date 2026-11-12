@@ -1,0 +1,36 @@
+{
+  "map": "/Game/SmallForest/Forest_Photoreal",
+  "trees": 47,
+  "saplings": 70,
+  "ferns": 460,
+  "actors": 869,
+  "assets": "Free Quixel Megascans from Fab",
+  "tree_bounds": [
+    {
+      "name": "SM_BlackAlder_Forest_01",
+      "extent": "<Struct 'Vector' (0x00000137C1A07198) {x: 409.130768, y: 414.392151, z: 1046.468628}>"
+    },
+    {
+      "name": "SM_BlackAlder_Forest_02",
+      "extent": "<Struct 'Vector' (0x00000137C1A07358) {x: 316.664169, y: 319.782166, z: 992.870728}>"
+    },
+    {
+      "name": "SM_BlackAlder_Forest_03",
+      "extent": "<Struct 'Vector' (0x00000137C1A02498) {x: 362.670227, y: 368.215637, z: 884.799683}>"
+    },
+    {
+      "name": "SM_BlackAlder_Forest_04",
+      "extent": "<Struct 'Vector' (0x00000137C1A0B1D8) {x: 353.832336, y: 292.816589, z: 589.156433}>"
+    },
+    {
+      "name": "SM_BlackAlder_Forest_05",
+      "extent": "<Struct 'Vector' (0x00000137C1A042D8) {x: 299.438324, y: 355.340485, z: 554.233032}>"
+    },
+    {
+      "name": "SM_BlackAlder_Forest_06",
+      "extent": "<Struct 'Vector' (0x00000137C1A0DC98) {x: 179.881683, y: 136.293060, z: 444.854279}>"
+    }
+  ],
+  "paid_assets": false,
+  "preview_pending": true
+}

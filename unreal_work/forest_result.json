@@ -1,0 +1,9 @@
+{
+  "map": "/Game/SmallForest/Forest_CameraView",
+  "camera": "Forest_View_Camera",
+  "trees": 22,
+  "actors": 228,
+  "source": "Unreal Engine built-in BasicShapes; original material colors",
+  "paid_generation": false,
+  "original_level": "/Game/DemoTemplate/_Core/Lvl_IntroRoom"
+}

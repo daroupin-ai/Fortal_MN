@@ -1,0 +1,42 @@
+{
+  "created_at": "2026-11-12",
+  "job_id": "eafc5d0a-8578-4dd6-9f8a-da3211cbf515",
+  "original_video": "../city_sportscar_15s_preview.mp4",
+  "reference_sheet": "reference_sheet.jpg",
+  "timing": "Original 15 seconds compressed to 10 seconds (1.5x playback).",
+  "requested": {
+    "model": "seedance_2_5",
+    "mode": "video_edit",
+    "duration": 10,
+    "resolution": "1080p",
+    "aspect_ratio": "16:9",
+    "count": 1,
+    "bitrate_mode": "high",
+    "generate_audio": false,
+    "prompt": "Transform the supplied 10-second 3D previs driving video into completely photorealistic live-action automotive cinematography. The video reference is the authoritative frame-by-frame guide for vehicle motion, camera trajectory, timing, composition, road direction and building layout. Preserve the same single continuous take, with no cuts and no added actions. The reference image is a three-view design sheet of ONE identical car (front, side, rear); use it only for vehicle identity and city design, never display a collage, panel divisions, labels or text.\n\nKeep the original compact unbranded metallic deep teal sports coupe, sculpted low body, dark glazed canopy, five-spoke metallic wheels, low horizontal white LED front lights and continuous thin red rear light. Preserve its proportions, silhouette, body color and orientation consistently across all angles. Give it real painted metal with subtle metallic flakes and clearcoat, detailed rubber tires with correct contact patches, actual brake discs, layered optical glass, believable panel gaps and physically correct environmental reflections. Replace the simplified city surfaces with credible contemporary stone-and-glass urban facades, reflective windows with interior depth, detailed asphalt aggregate, worn lane paint, sidewalks, trees and slender street lamps in the same positions. Natural warm afternoon sunlight, soft skylight, realistic contact shadows, realistic exposure and lens response, restrained depth of field, finely detailed live-action photographic texture.\n\nMotion and camera: 0-1 seconds, the car holds still in a low front-right three-quarter composition with camera about 0.5m above the road. At 1 second it launches and accelerates smoothly straight forward in its lane. 1-2.7 seconds the camera tracks ahead at bumper height. 2.7-4.7 seconds it smoothly glides along the same right side to a low side-tracking composition. 4.7-7 seconds it continues the same uninterrupted orbit toward the rear-right quarter while matching the car's forward movement. 7-10 seconds settle into a rear chase, gradually rising to about 1.8m. These textual beats clarify the supplied video's motion; always prioritize the video timing and exact framing. Keep the complete car visible, preserve ground parallax and perspective, synchronize rolling wheels to road speed, use subtle physically plausible suspension and natural motion blur. No drifting, turning onto another road, speeding camera whip, sudden zoom, new camera angle, geometry changes, duplicated wheels, floating tires, extra cars or pedestrians. The final result should look like an actual professionally filmed car driving through a real city, with none of the smooth toy-like or videogame-rendered appearance of the input. Full-frame 16:9, 1080p, exactly 10 seconds.",
+    "medias": [
+      {
+        "role": "video",
+        "value": "9d4671d4-ed86-4a62-ba08-14c1381536ae"
+      },
+      {
+        "role": "image",
+        "value": "2621b950-f76b-4308-8168-0a5437414ca9"
+      }
+    ]
+  },
+  "status": "completed",
+  "estimated_credits": 200,
+  "generated_duration_seconds": 9.708333333333334,
+  "final_duration_seconds": 10,
+  "final_frames": 240,
+  "width": 1920,
+  "height": 1080,
+  "fps": 24,
+  "final_codec": "h264",
+  "final_file": "city_sportscar_seedance_1080p_10s_final.mp4",
+  "final_media_id": "14505adb-faa6-4696-8146-6385d54ef735",
+  "original_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3LuuJ2w0MNAcc4FRJ4vvohCu5De/hf_20261112_041905_eafc5d0a-8578-4dd6-9f8a-da3211cbf515.mp4",
+  "final_result_url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3LuuJ2w0MNAcc4FRJ4vvohCu5De/14505adb-faa6-4696-8146-6385d54ef735.mp4",
+  "validation": "Resolution and exact duration verified with ffprobe; ten sampled frames reviewed against source camera sequence. Major front-to-side-to-rear trajectory preserved; generative imagery is not a frame-exact reconstruction."
+}
