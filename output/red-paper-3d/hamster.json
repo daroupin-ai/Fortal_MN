@@ -1,0 +1,299 @@
+{
+  "source": "블렌더/mochi_toast_highpoly/mochi_highpoly.blend",
+  "stride": 11,
+  "vertices": 197808,
+  "groups": {
+    "body": {
+      "first": 0,
+      "count": 147648
+    },
+    "leftPaw": {
+      "first": 147648,
+      "count": 23640
+    },
+    "rightPaw": {
+      "first": 171288,
+      "count": 25944
+    },
+    "mouth": {
+      "first": 197232,
+      "count": 576
+    }
+  },
+  "mouth": [
+    0,
+    0.99,
+    1.11
+  ],
+  "pawCenters": [
+    [
+      -0.38,
+      0.555,
+      0.88
+    ],
+    [
+      0.38,
+      0.555,
+      0.88
+    ]
+  ],
+  "objects": [
+    {
+      "name": "Bread_Bottom_HighPoly",
+      "type": "MESH"
+    },
+    {
+      "name": "Bread_Top_HighPoly",
+      "type": "MESH"
+    },
+    {
+      "name": "Mochi · sculpted continuous body",
+      "type": "MESH"
+    },
+    {
+      "name": "Ear · furry outer rim",
+      "type": "MESH"
+    },
+    {
+      "name": "Ear · pink fold",
+      "type": "MESH"
+    },
+    {
+      "name": "Eye · wet lash line",
+      "type": "MESH"
+    },
+    {
+      "name": "Eye · glossy cornea",
+      "type": "MESH"
+    },
+    {
+      "name": "Front paw",
+      "type": "MESH"
+    },
+    {
+      "name": "Curled finger",
+      "type": "MESH"
+    },
+    {
+      "name": "Small nail",
+      "type": "MESH"
+    },
+    {
+      "name": "Finger crease",
+      "type": "CURVE"
+    },
+    {
+      "name": "Curled finger.001",
+      "type": "MESH"
+    },
+    {
+      "name": "Small nail.001",
+      "type": "MESH"
+    },
+    {
+      "name": "Finger crease.001",
+      "type": "CURVE"
+    },
+    {
+      "name": "Curled finger.002",
+      "type": "MESH"
+    },
+    {
+      "name": "Small nail.002",
+      "type": "MESH"
+    },
+    {
+      "name": "Finger crease.002",
+      "type": "CURVE"
+    },
+    {
+      "name": "Curled finger.003",
+      "type": "MESH"
+    },
+    {
+      "name": "Small nail.003",
+      "type": "MESH"
+    },
+    {
+      "name": "Finger crease.003",
+      "type": "CURVE"
+    },
+    {
+      "name": "Back paw",
+      "type": "MESH"
+    },
+    {
+      "name": "Fine whisker",
+      "type": "CURVE"
+    },
+    {
+      "name": "Fine whisker.001",
+      "type": "CURVE"
+    },
+    {
+      "name": "Fine whisker.002",
+      "type": "CURVE"
+    },
+    {
+      "name": "Fine whisker.003",
+      "type": "CURVE"
+    },
+    {
+      "name": "Fine whisker.004",
+      "type": "CURVE"
+    },
+    {
+      "name": "Fine whisker.005",
+      "type": "CURVE"
+    },
+    {
+      "name": "Fine whisker.006",
+      "type": "CURVE"
+    },
+    {
+      "name": "Brow whisker",
+      "type": "CURVE"
+    },
+    {
+      "name": "Brow whisker.001",
+      "type": "CURVE"
+    },
+    {
+      "name": "Ear · furry outer rim.001",
+      "type": "MESH"
+    },
+    {
+      "name": "Ear · pink fold.001",
+      "type": "MESH"
+    },
+    {
+      "name": "Eye · wet lash line.001",
+      "type": "MESH"
+    },
+    {
+      "name": "Eye · glossy cornea.001",
+      "type": "MESH"
+    },
+    {
+      "name": "Front paw.001",
+      "type": "MESH"
+    },
+    {
+      "name": "Curled finger.004",
+      "type": "MESH"
+    },
+    {
+      "name": "Small nail.004",
+      "type": "MESH"
+    },
+    {
+      "name": "Finger crease.004",
+      "type": "CURVE"
+    },
+    {
+      "name": "Curled finger.005",
+      "type": "MESH"
+    },
+    {
+      "name": "Small nail.005",
+      "type": "MESH"
+    },
+    {
+      "name": "Finger crease.005",
+      "type": "CURVE"
+    },
+    {
+      "name": "Curled finger.006",
+      "type": "MESH"
+    },
+    {
+      "name": "Small nail.006",
+      "type": "MESH"
+    },
+    {
+      "name": "Finger crease.006",
+      "type": "CURVE"
+    },
+    {
+      "name": "Curled finger.007",
+      "type": "MESH"
+    },
+    {
+      "name": "Small nail.007",
+      "type": "MESH"
+    },
+    {
+      "name": "Finger crease.007",
+      "type": "CURVE"
+    },
+    {
+      "name": "Back paw.001",
+      "type": "MESH"
+    },
+    {
+      "name": "Fine whisker.007",
+      "type": "CURVE"
+    },
+    {
+      "name": "Fine whisker.008",
+      "type": "CURVE"
+    },
+    {
+      "name": "Fine whisker.009",
+      "type": "CURVE"
+    },
+    {
+      "name": "Fine whisker.010",
+      "type": "CURVE"
+    },
+    {
+      "name": "Fine whisker.011",
+      "type": "CURVE"
+    },
+    {
+      "name": "Fine whisker.012",
+      "type": "CURVE"
+    },
+    {
+      "name": "Fine whisker.013",
+      "type": "CURVE"
+    },
+    {
+      "name": "Brow whisker.002",
+      "type": "CURVE"
+    },
+    {
+      "name": "Brow whisker.003",
+      "type": "CURVE"
+    },
+    {
+      "name": "Nose · soft triangular tip",
+      "type": "MESH"
+    },
+    {
+      "name": "Nostril",
+      "type": "MESH"
+    },
+    {
+      "name": "Nostril.001",
+      "type": "MESH"
+    },
+    {
+      "name": "Philtrum",
+      "type": "CURVE"
+    },
+    {
+      "name": "Natural mouth line",
+      "type": "CURVE"
+    },
+    {
+      "name": "Natural mouth line.001",
+      "type": "CURVE"
+    },
+    {
+      "name": "Tail",
+      "type": "MESH"
+    }
+  ],
+  "note": "Reduced mesh copy; individual fur strands omitted. Source unchanged."
+}

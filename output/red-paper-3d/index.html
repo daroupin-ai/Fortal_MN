@@ -14,36 +14,165 @@
 /* Folded red paper, kept outside the WebGL scene so the stage stays unchanged. */
 .curtain-waiting header,.curtain-waiting #status,.curtain-waiting .help,.curtain-waiting .controls,.curtain-waiting .camera-panel{visibility:hidden;pointer-events:none}
 .curtains{position:fixed;inset:0;z-index:5;overflow:hidden;pointer-events:none}
-.curtain{position:absolute;top:0;bottom:0;width:calc(50% + 1px);background-color:#661622;background-image:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27317%27 height=%27521%27%3E%3Cpath fill=%27%23be5140%27 opacity=%27.44%27 d=%27M9 77l109-29 35 131-31-3-8 9-22-4-59 17zM188 357l97-20 22 103-16-4-9 7-73 20z%27/%3E%3Cpath fill=%27%2333010e%27 opacity=%27.37%27 d=%27M95 230l110 13-9 43-9-2-14 9-93-15zM241 61l58 21-18 70-57-16z%27/%3E%3Cpath fill=%27none%27 stroke=%27%23e3a27b%27 opacity=%27.48%27 d=%27M33 198l59-17 22 4 8-9 31 3M209 463l73-20 9-7 16 4%27/%3E%3C/svg%3E"),repeating-linear-gradient(90deg,#3b0c15 0 19px,#73202a 19px 48px,#a13c39 48px 78px,#bd6250 78px 79px,#59131e 79px 102px,#80242a 102px 129px,#461019 129px 151px);box-shadow:0 0 24px #100306aa;transition:transform 2.6s cubic-bezier(.65,0,.25,1);pointer-events:auto}
-.curtain::after{content:"";position:absolute;inset:0;opacity:.72;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.48 .73' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23fff' filter='url(%23grain)' d='M0 0h180v180H0z'/%3E%3C/svg%3E");mix-blend-mode:soft-light}
-.curtain-left{left:0;border-right:2px solid #b7554c77}
-.curtain-right{right:0;border-left:2px solid #b7554c77;background-position:right top}
+.curtain{
+ position:absolute;top:0;bottom:0;width:calc(50% + 1px);
+ background-color:#56372d;
+ background-image:
+  linear-gradient(180deg,#15030bcc,transparent 23%,#22041025 64%,#100208aa),
+  radial-gradient(ellipse at 50% 34%,#c6354d48,transparent 72%),
+  repeating-linear-gradient(90deg,#211c1b 0,#342722 9%,#56372d 22%,#8b503a 36%,#a4664e 43%,#694235 54%,#42352f 70%,#2d2422 84%,#211c1b 100%);
+ background-size:100% 100%,100% 100%,clamp(72px,10vw,160px) 100%;
+ box-shadow:0 0 30px #100306aa;
+ transition:transform 2.6s cubic-bezier(.65,0,.25,1);
+ pointer-events:auto
+}
+.curtain::after{content:"";position:absolute;inset:0;opacity:.16;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.48 .73' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23fff' filter='url(%23grain)' d='M0 0h180v180H0z'/%3E%3C/svg%3E");mix-blend-mode:soft-light}
+.curtain-left{left:0;border-right:1px solid #b3466070}
+.curtain-right{right:0;border-left:1px solid #b3466070;background-position:right top}
 .curtain-opening .curtain-left{transform:translateX(calc(-100% + clamp(14px,2.4vw,30px)))}
 .curtain-opening .curtain-right{transform:translateX(calc(100% - clamp(14px,2.4vw,30px)))}
 html:not(.curtain-waiting) .curtain{pointer-events:none}
 .error{z-index:6}
+#stage-light{position:fixed;inset:0;pointer-events:none;opacity:0;background:radial-gradient(ellipse at 50% 52%,#ffc17b35,transparent 59%);transition:opacity 2.6s ease}
+.curtain-opening #stage-light{opacity:1}
+#start-show{position:fixed;z-index:6;top:50%;left:50%;transform:translate(-50%,-50%);padding:15px 28px;font-size:16px;background:#342722;border-color:#e0a886}
+#round-hud{position:fixed;z-index:4;top:24px;left:50%;transform:translateX(-50%);display:flex;gap:14px;align-items:center;padding:8px 16px;border:1px solid #725144;background:#342722;color:#ffd395;pointer-events:none;white-space:nowrap}
+#round-time{font-variant-numeric:tabular-nums;color:#f4e6ce}
+.curtain-waiting #round-hud{visibility:hidden}
+.round-over #round-hud{top:50%;transform:translate(-50%,-50%);padding:22px 34px;font-size:clamp(28px,6vw,60px);box-shadow:0 8px 40px #12060db3}
+.round-over header,.round-over #status,.round-over .help,.round-over .controls,.round-over .camera-panel,.round-over .landing-scrap{display:none}
+@media(max-width:600px){html:not(.round-over) #round-hud{top:94px}}
 @media(prefers-reduced-motion:reduce){.curtain{transition-duration:.01s}}
 </style>
+<style>
+/* Paper theatre UI: warm ticket stock, burgundy ink, and stitched borders. */
+:root{--paper:#f1dfbb;--ink:#382b24;--wine:#714233;--edge:#c6a36d;--panel:#292b2e;--muted:#dcc7ae}
+body{font-family:"Malgun Gothic",sans-serif}
+header{top:24px;left:48px;padding:18px 24px 20px;background:var(--paper);color:var(--ink);border:1px solid var(--edge);box-shadow:5px 5px 0 #38151cd9;max-width:320px}
+header::after{content:"";position:absolute;inset:7px;border:1px dashed #9f735d;pointer-events:none}
+header small{font-size:10px;letter-spacing:3px;color:#704132}
+h1{font-family:Georgia,"Batang",serif;font-weight:700;font-size:28px;letter-spacing:1px;margin:10px 0}
+header p{font-size:14px;color:#704132;line-height:1.5}
+button{min-height:44px;min-width:44px;padding:11px 18px;border:1px solid var(--edge);border-radius:2px;background:var(--wine);color:var(--paper);font-size:16px;line-height:1.4;box-shadow:inset 0 0 0 3px #45352e;transition:background .15s}
+button:hover:not(:disabled){background:#925440}
+button:disabled{cursor:not-allowed;opacity:.55}
+button:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid #f8dda3;outline-offset:3px}
+#status{top:174px;left:48px;right:auto;max-width:320px;padding:9px 13px;background:var(--panel);border-left:2px solid var(--edge);color:var(--muted);font-size:12px;line-height:1.6;letter-spacing:0;pointer-events:none}
+.camera-panel{top:24px;right:48px;width:300px;padding:0;background:var(--panel);border:1px solid var(--edge);border-radius:2px;box-shadow:5px 5px 0 #08040680;font-size:16px;backdrop-filter:none;max-height:calc(100dvh - 130px);overflow:auto;scrollbar-color:var(--edge) var(--panel)}
+.camera-panel>summary{padding:16px 20px;color:var(--paper);font-family:Georgia,"Batang",serif;font-weight:700;font-size:18px;min-height:56px;line-height:1.4}
+.camera-panel[open]>summary{border-bottom:1px dashed var(--edge)}
+.panel-content{padding:4px 18px 18px}
+.camera-panel p{font-size:14px;color:var(--muted);line-height:1.7}
+.camera-panel .note{font-size:13px;color:var(--muted)}
+.camera-panel #camera-status,.camera-panel #hand-status{border-left:2px solid var(--edge);padding-left:10px}
+.camera-panel #face-status{font-size:13px;color:#e4c898}
+.camera-panel label{font-size:14px}
+.camera-panel input[type=range]{min-height:32px;accent-color:var(--paper)}
+.camera-tuning{border-top:1px dashed #84634e;margin-top:16px;padding-top:6px}
+.camera-tuning summary{min-height:44px;padding:12px 0;font-size:14px;color:var(--paper)}
+.privacy-note{border-top:1px solid #624333;padding-top:12px}
+.help{bottom:28px;left:48px;padding:12px 16px;background:var(--panel);border-left:2px solid var(--edge);color:var(--muted);font-size:14px;line-height:1.7}
+.help strong{display:block;color:var(--paper);font-weight:500}
+.controls{bottom:28px;right:48px;gap:8px;padding:8px;background:var(--panel);border:1px solid var(--edge)}
+#round-hud{top:24px;gap:0;padding:0;border:1px solid var(--edge);background:var(--paper);color:var(--ink);box-shadow:4px 4px 0 #38151cd9;font-size:18px;font-weight:700}
+#throw-score{padding:14px 22px}
+#round-time{padding:14px 22px;border-left:1px dashed #987257;color:var(--ink)}
+.round-over #round-hud{padding:14px;max-width:calc(100vw - 48px);white-space:normal;text-align:center;font-family:Georgia,"Batang",serif;border:4px double var(--ink);outline:5px solid var(--paper)}
+#start-show{width:min(330px,calc(100vw - 64px));padding:28px 32px;background:var(--paper);color:var(--ink);border:5px double var(--ink);outline:1px solid var(--edge);outline-offset:5px;box-shadow:0 16px 60px #10020888;font-family:Georgia,"Batang",serif;font-weight:700;font-size:24px;letter-spacing:2px}
+#start-show::before{content:"PAPER LABYRINTH";display:block;font:10px/1.8 Arial,sans-serif;letter-spacing:4px;margin-bottom:16px;color:#704132}
+#start-show::after{content:"붉은 종이 극장에 오신 것을 환영합니다";display:block;font:13px/1.6 "Malgun Gothic",sans-serif;letter-spacing:0;margin-top:16px;color:#704132}
+#start-show:hover:not(:disabled){background:#fff0d1}
+.error{border:1px solid var(--edge);background:var(--panel);color:var(--paper)}
+@media(max-width:1100px){
+ header{left:28px;top:20px;padding:14px 20px;max-width:260px}h1{font-size:24px}header p{font-size:13px}
+ #status{left:28px;top:154px;max-width:260px;font-size:11px}
+ .camera-panel{right:28px;top:20px;width:270px}
+ #round-hud{top:20px;font-size:16px}#throw-score,#round-time{padding:12px 14px}
+ .help{left:28px;font-size:13px}.controls{right:28px}
+}
+@media(max-width:760px){
+ header{top:14px;left:20px;max-width:calc(100vw - 40px);padding:12px 18px}h1{font-size:22px;margin:5px 0}header small{font-size:9px}header p{display:none}
+ #status{display:none}
+ html:not(.round-over) #round-hud{top:110px;left:20px;transform:none;font-size:14px}
+ #throw-score,#round-time{padding:12px}
+ .camera-panel{top:110px;right:20px;width:min(300px,calc(100vw - 40px));max-height:calc(100dvh - 200px);z-index:4}
+ .camera-panel:not([open]){width:auto;max-width:calc(100vw - 210px)}
+ .camera-panel>summary{padding:12px;font-size:15px;min-height:46px}
+ .help{bottom:94px;left:20px;right:20px;padding:9px 12px;font-size:12px;text-align:center}
+ .controls{bottom:18px;right:auto;left:50%;transform:translateX(-50%);white-space:nowrap}
+}
+@media(max-height:540px){
+ header{top:12px;padding:10px 16px}header p,#status,.help{display:none}
+ .camera-panel{top:12px;max-height:calc(100dvh - 90px)}
+ html:not(.round-over) #round-hud{top:12px}
+ .controls{bottom:12px}
+}
+@media(prefers-reduced-motion:reduce){button{transition:none}}
+</style>
 <canvas id="scene" inert tabindex="0" aria-label="붉은 계단과 종이 인물이 있는 3D 미로. 드래그 또는 방향키로 회전하고 마우스 휠로 확대합니다."></canvas>
+<div id="stage-light" aria-hidden="true"></div>
 <div class="curtains" aria-hidden="true"><div class="curtain curtain-left"></div><div class="curtain curtain-right"></div></div>
-<header><small>PAPER LABYRINTH / 02</small><h1>붉은 종이 미로</h1><p>오리고, 겹치고, 길을 잃고</p></header>
+<button id="start-show" disabled>시작하기</button>
+<output id="eat-mode" hidden aria-live="off"></output>
+<output id="combo-count" hidden aria-live="polite"></output>
+<div id="round-hud"><output id="throw-score" aria-live="polite">점수 0</output><span id="round-time" role="timer">60초</span></div>
+<header><small>PAPER LABYRINTH / 02</small><h1>붉은 종이 미로</h1><p>손끝으로 여는 작은 종이 극장</p></header>
 <div id="status" role="status">공간을 준비하고 있어요</div>
-<details class="camera-panel" open><summary>웹캠 인물 · 초록 배경 제거</summary>
+<details class="camera-panel"><summary>참여 · 설정</summary>
+<div class="panel-content">
 <button id="camera-on">카메라 켜기</button><button id="camera-off" hidden>카메라 끄기</button>
-<p id="camera-status" role="status">카메라를 켜면 중앙에 내 모습이 나타나요.</p>
-<button id="hand-on" disabled>손으로 집기 연습</button><button id="hand-off" hidden>손 조작 끝내기</button>
-<p id="hand-status" role="status">카메라를 켠 뒤 손으로 집기를 시작하세요.</p>
-<label for="key-strength">초록색 제거 강도 <output id="key-value">55</output></label><input id="key-strength" type="range" min="0" max="100" value="55">
-<label for="key-softness">가장자리 부드럽게 <output id="softness-value">35</output></label><input id="key-softness" type="range" min="0" max="100" value="35">
-<p class="note">초록색 천 앞에서 머리부터 발끝까지 나오게 서 주세요. 초록색 옷도 함께 지워집니다.</p>
-<p class="note">영상은 이 PC에서만 처리합니다. 녹화·외부 전송·마이크 사용 없음.</p>
+<p id="camera-status" role="status">중앙 캐릭터가 나를 대신해요. 아래 확인창에서 내 모습과 손·입 인식 상태를 볼 수 있어요.</p>
+<button id="hand-on" disabled>캐릭터 움직이기</button><button id="hand-off" hidden>움직임 연결 끄기</button>
+<p id="hand-status" role="status">카메라를 켠 뒤 ‘캐릭터 움직이기’를 눌러 주세요.</p>
+<p id="face-status" role="status">입 인식 대기 중</p>
+<p class="note">입을 한 번 크게 벌리면 2초간 먹기 모드! 엄지와 검지를 붙인 채 좌우로 훑으면 노랗게 빛나는 친구를 연속으로 잡아요. 4초 안에 이어 먹으면 콤보, 3콤보부터 2점!</p>
+<details class="camera-tuning" hidden><summary>카메라 배경 조절</summary>
+<label for="chroma-strength">초록 배경 제거 강도</label>
+<input id="chroma-strength" type="range" min="0" max="100" value="60">
+<p class="note">초록색 천에 빛이 고르게 닿도록 해 주세요. 초록색 옷도 함께 지워질 수 있어요.</p>
 </details>
-<div class="help">마우스를 누른 채 움직여 둘러보세요<br>휠 · 확대 / 축소 &nbsp; | &nbsp; 방향키 · 회전</div>
-<div class="controls"><button id="out" aria-label="축소">−</button><button id="in" aria-label="확대">＋</button><button id="home">처음 시점</button></div>
+<p class="note privacy-note">영상은 이 PC에서만 처리합니다.<br>녹화·외부 전송·마이크 사용 없음.</p>
+</div>
+</details>
+<div class="help"><strong>드래그해서 무대를 둘러보세요</strong>휠 · 확대 / 축소 &nbsp; | &nbsp; 방향키 · 회전</div>
+<section id="tracking-monitor" aria-label="내 모습과 손·입 확인창">
+ <div class="monitor-heading"><strong>나의 움직임</strong><span id="monitor-state" role="status">카메라 꺼짐</span></div>
+ <div class="monitor-body">
+  <div class="monitor-video"><video id="camera-preview" muted autoplay playsinline aria-label="거울처럼 보이는 내 카메라 영상"></video><canvas id="tracking-overlay" width="320" height="180" aria-hidden="true"></canvas><span id="preview-empty">내 모습이 여기에 보여요</span></div>
+  <div class="monitor-signals">
+   <div id="signal-left" class="signal"><span>화면 왼손</span><strong>대기</strong></div>
+   <div id="signal-right" class="signal"><span>화면 오른손</span><strong>대기</strong></div>
+   <div id="signal-mouth" class="signal"><span>입</span><strong>대기</strong></div>
+   <meter id="mouth-meter" min="0" max=".6" value="0" aria-label="입 벌린 정도"></meter>
+  </div>
+ </div>
+ <div class="monitor-actions"><button id="monitor-start">카메라 켜기</button><button id="monitor-stop" hidden>카메라 끄기</button></div>
+ <p id="monitor-hint">카메라를 켜고 손과 입을 확인해 보세요.</p>
+</section>
+<style>
+#tracking-monitor{position:fixed;z-index:4;bottom:22px;left:48px;width:344px;padding:12px;background:#292b2ef5;border:1px solid var(--edge);box-shadow:4px 4px 0 #08040680;color:var(--paper)}
+.monitor-heading{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:14px;margin-bottom:9px}.monitor-heading span{font-size:12px;color:#dcc7ae}
+.monitor-body{display:flex;gap:10px;align-items:center}.monitor-video{position:relative;width:190px;aspect-ratio:16/9;background:#100b0c;overflow:hidden;border:1px solid #80604d;flex-shrink:0}
+#camera-preview{width:100%;height:100%;object-fit:contain;transform:scaleX(-1);display:block}
+#tracking-overlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;cursor:default}
+#preview-empty{position:absolute;inset:0;display:grid;place-items:center;font-size:11px;color:#dcc7ae}#preview-empty[hidden]{display:none}
+.monitor-signals{flex:1;min-width:0}.signal{padding:3px 0 5px;display:flex;flex-direction:column;gap:2px}.signal span{font-size:11px;color:#dcc7ae}.signal strong{font-size:13px;color:#c9ae9d}.signal[data-state=seen] strong{color:#a5eed3}.signal[data-state=active] strong{color:#ffe197}
+#mouth-meter{width:100%;height:10px;accent-color:#a5eed3;display:block}.monitor-actions{display:flex;gap:8px;margin-top:10px}.monitor-actions button{font-size:13px;padding:8px 10px;min-height:38px;flex:1}.monitor-actions [hidden]{display:none}
+#monitor-hint{font-size:12px;line-height:1.5;color:#dcc7ae;margin:8px 0 0}.help{display:none}
+.curtain-waiting #tracking-monitor,.round-over #tracking-monitor{display:none}
+@media(max-width:1100px){#tracking-monitor{left:28px;bottom:22px}}
+@media(max-width:760px){#tracking-monitor{left:20px;bottom:86px;width:calc(100vw - 40px);max-width:344px;padding:10px}.monitor-video{width:55%}.signal{padding:1px 0}.monitor-heading{margin-bottom:6px}.monitor-actions{margin-top:6px}#monitor-hint{margin-top:5px;font-size:11px}}
+@media(max-height:540px){#tracking-monitor{bottom:12px;width:300px;padding:8px}.monitor-video{width:150px}#monitor-hint{display:none}.monitor-heading{margin-bottom:4px}.monitor-actions{margin-top:4px}}
+</style>
+<div class="controls" role="group" aria-label="무대 시점 조절"><button id="out" aria-label="축소">−</button><button id="in" aria-label="확대">＋</button><button id="home">처음 시점</button></div>
 <div id="error" class="error" role="alert"></div>
+<div id="mouth-cursor" hidden aria-hidden="true"></div>
 <div id="hand-cursor" hidden aria-hidden="true"></div><div id="grab-target" hidden aria-hidden="true"></div>
 <style>
-#hand-cursor,#grab-target{position:absolute;pointer-events:none;border-radius:50%;transform:translate(-50%,-50%);z-index:3}#hand-cursor{width:24px;height:24px;border:2px solid #f5e7cb;background:#c79b6133}#hand-cursor.ready{border-color:#91e3c1;background:#70d9b955}#hand-cursor.holding{background:#f6d27caa;border-color:#ffe9a5;width:18px;height:18px}#grab-target{width:70px;height:70px;border:2px dashed #efd081;box-shadow:0 0 20px #e6b96433}#grab-target[hidden],#hand-cursor[hidden]{display:none}
+#eat-mode{position:fixed;z-index:4;left:50%;top:135px;transform:translateX(-50%);padding:8px 14px;background:#2c1b20e8;color:#ffe8bd;border:1px solid #c19b67;font-size:14px;pointer-events:none;text-align:center}#eat-mode[data-active=true]{background:#174336ee;color:#d9ffe5;border-color:#a9efbf}.curtain-waiting #eat-mode,.round-over #eat-mode{display:none}
+#combo-count{position:fixed;z-index:4;top:100px;left:50%;transform:translateX(-50%);font-size:24px;font-weight:bold;color:#ffdd88;text-shadow:0 2px 5px #23010b;pointer-events:none}.eat-points{position:fixed;z-index:4;font-size:30px;font-weight:bold;color:#ffe49c;text-shadow:0 2px 5px #23010b;pointer-events:none}.curtain-waiting #combo-count,.round-over #combo-count,.round-over .eat-points{display:none}
+#mouth-cursor{position:absolute;pointer-events:none;z-index:3;border:1px dashed #efd08177;border-radius:50%;transform:translate(-50%,-50%)}#mouth-cursor.open{border:2px solid #91e3c1;background:#70d9b918}#mouth-cursor[hidden]{display:none}
+#hand-cursor,#grab-target{position:absolute;pointer-events:none;border-radius:50%;transform:translate(-50%,-50%);z-index:3}#hand-cursor{width:24px;height:24px;border:2px solid #f5e7cb;background:#c79b6133}#hand-cursor.ready{border-color:#91e3c1;background:#70d9b955}#hand-cursor.holding{background:#f6d27caa;border-color:#ffe9a5;width:18px;height:18px}#grab-target{width:100px;height:100px;border:3px solid #ffe49a;box-shadow:0 0 24px #ffdc6b99,inset 0 0 15px #ffe7ac44}#grab-target::after{content:attr(data-label);position:absolute;top:-27px;left:50%;transform:translateX(-50%);background:#3e2415;color:#ffe9a8;padding:3px 8px;font-size:12px;white-space:nowrap;border-radius:4px}#grab-target[hidden],#hand-cursor[hidden]{display:none}
 </style>
 <script type="module" src="scene.js"></script>
 </html>

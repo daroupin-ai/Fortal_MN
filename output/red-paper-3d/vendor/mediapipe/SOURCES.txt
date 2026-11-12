@@ -7,3 +7,5 @@ https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/
 SHA256: fbc2a30080c3c557093b5ddfc334698132eb341044ccee322ccf8bcf3607cde1
 
 Runtime and model are served locally. No camera frames are uploaded.
+Face Landmarker model: https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task
+Selfie Segmenter model: https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/1/selfie_segmenter.tflite
