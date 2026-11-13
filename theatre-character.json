@@ -1,0 +1,38 @@
+{
+  "vertices": 386058,
+  "stride": 11,
+  "groups": {
+    "body": {
+      "first": 0,
+      "count": 245304
+    },
+    "leftPaw": {
+      "first": 245304,
+      "count": 35832
+    },
+    "rightPaw": {
+      "first": 281136,
+      "count": 35832
+    },
+    "jaw": {
+      "first": 316968,
+      "count": 21288
+    },
+    "mouth": {
+      "first": 338256,
+      "count": 3072
+    },
+    "miniature": {
+      "first": 341328,
+      "count": 44730
+    }
+  },
+  "source": "블렌더/theatre_creature/theatre_creature.blend",
+  "mouth": [
+    0,
+    0.79,
+    0.67
+  ],
+  "reference": "Terracotta and slate blue paper jester",
+  "jawTravel": 0.22
+}

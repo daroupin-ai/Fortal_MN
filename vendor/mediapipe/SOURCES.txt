@@ -1,0 +1,11 @@
+MediaPipe Tasks Vision 1.2.3 (Apache-2.0)
+https://registry.npmjs.org/@mediapipe/tasks-vision/-/tasks-vision-1.2.3.tgz
+https://github.com/google-ai-edge/mediapipe
+
+Hand Landmarker float16 model, downloaded 2026-11-12:
+https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task
+SHA256: fbc2a30080c3c557093b5ddfc334698132eb341044ccee322ccf8bcf3607cde1
+
+Runtime and model are served locally. No camera frames are uploaded.
+Face Landmarker model: https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task
+Selfie Segmenter model: https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/1/selfie_segmenter.tflite
