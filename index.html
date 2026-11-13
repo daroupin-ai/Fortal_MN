@@ -41,16 +41,27 @@ html:not(.curtain-waiting) .curtain{pointer-events:none}
 .curtain-waiting #round-hud{visibility:hidden}
 .round-over #round-hud{top:50%;transform:translate(-50%,-50%);padding:22px 34px;font-size:clamp(28px,6vw,60px);box-shadow:0 8px 40px #12060db3}
 .round-over header,.round-over #status,.round-over .help,.round-over .controls,.round-over .camera-panel,.round-over .landing-scrap{display:none}
-.finale .curtains::before{
- content:"";position:absolute;inset:0 0 auto;height:80vh;
- background:linear-gradient(#400009,#a90020 65%,#65000e);
- clip-path:polygon(0 0,100% 0,100% 44%,96% 45%,94% 69%,92% 74%,90% 68%,89% 35%,83% 31%,81% 54%,79% 59%,77% 54%,76% 27%,69% 28%,66% 82%,64% 91%,62% 93%,60% 87%,58% 44%,53% 42%,51% 62%,48% 67%,45% 62%,43% 27%,36% 32%,34% 48%,32% 53%,30% 48%,28% 30%,22% 35%,20% 89%,18% 99%,15% 95%,13% 60%,10% 56%,8% 70%,5% 74%,2% 65%,0 64%);
- transform-origin:top;animation:finale-drip 1.5s cubic-bezier(.4,0,.7,1) both;
+.finale-flow{display:none;position:absolute;inset:0;overflow:hidden}
+.finale .finale-flow{display:block}
+.finale-flow i{
+ position:absolute;top:-3vh;left:var(--x);width:var(--w);height:var(--h);
+ border-radius:38% 52% 62% 44% / 2% 2% 8% 11%;
+ background:linear-gradient(96deg,#240006cc,#620012 22%,#a4192b 39%,#67000d 52%,#300007ee 91%);
+ box-shadow:inset 0 -4px 8px #170003aa;
+ transform-origin:top;animation:finale-drip var(--duration) var(--delay) cubic-bezier(.35,.12,.62,1) both;
 }
-.finale #round-hud{z-index:6;animation:finale-score .35s 3.7s both}
+.finale .curtains::after{
+ content:"";position:absolute;inset:0;background:#080103;
+ animation:finale-darken 3.8s .25s ease-in-out both;
+}
+.finale #round-hud{z-index:6;animation:finale-score .65s 4s both}
 @keyframes finale-drip{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes finale-darken{from{opacity:0}to{opacity:.84}}
 @keyframes finale-score{from{opacity:0}to{opacity:1}}
-@media(prefers-reduced-motion:reduce){.finale .curtains::before,.finale #round-hud{animation:none}}
+@media(prefers-reduced-motion:reduce){
+ .finale-flow i,.finale #round-hud{animation:none}
+ .finale .curtains::after{animation:none;opacity:.84}
+}
 @media(max-width:600px){html:not(.round-over) #round-hud{top:94px}}
 @media(prefers-reduced-motion:reduce){.curtain{transition-duration:.01s}}
 </style>
@@ -121,7 +132,7 @@ button:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid
 </style>
 <canvas id="scene" inert tabindex="0" aria-label="붉은 계단과 종이 인물이 있는 3D 미로. 드래그 또는 방향키로 회전하고 마우스 휠로 확대합니다."></canvas>
 <div id="stage-light" aria-hidden="true"></div>
-<div class="curtains" aria-hidden="true"><div class="curtain curtain-left"></div><div class="curtain curtain-right"></div></div>
+<div class="curtains" aria-hidden="true"><div class="finale-flow"><i style="--x:-4%;--w:12%;--h:54vh;--delay:90ms;--duration:1698ms"></i><i style="--x:5%;--w:8%;--h:73vh;--delay:20ms;--duration:1926ms"></i><i style="--x:16%;--w:11%;--h:40vh;--delay:220ms;--duration:1530ms"></i><i style="--x:25%;--w:6%;--h:59vh;--delay:360ms;--duration:1758ms"></i><i style="--x:33%;--w:12%;--h:85vh;--delay:140ms;--duration:2070ms"></i><i style="--x:43%;--w:10%;--h:51vh;--delay:40ms;--duration:1662ms"></i><i style="--x:51%;--w:11%;--h:67vh;--delay:240ms;--duration:1854ms"></i><i style="--x:59%;--w:9%;--h:38vh;--delay:440ms;--duration:1506ms"></i><i style="--x:69%;--w:12%;--h:94vh;--delay:110ms;--duration:2178ms"></i><i style="--x:79%;--w:11%;--h:60vh;--delay:310ms;--duration:1770ms"></i><i style="--x:88%;--w:10%;--h:76vh;--delay:190ms;--duration:1962ms"></i><i style="--x:96%;--w:9%;--h:48vh;--delay:70ms;--duration:1626ms"></i></div><div class="curtain curtain-left"></div><div class="curtain curtain-right"></div></div>
 <button id="start-show" disabled>시작하기</button>
 <output id="eat-mode" hidden aria-live="off"></output>
 <output id="combo-count" hidden aria-live="polite"></output>

@@ -643,7 +643,7 @@ function updateRoundClock(now){
  if(caughtCount>=10){
   const root=document.documentElement;
   root.classList.add('finale');
-  setTimeout(()=>root.classList.remove('curtain-opening'),reducedMotion.matches?0:1100);
+  setTimeout(()=>root.classList.remove('curtain-opening'),reducedMotion.matches?0:1400);
  }
  savedView=null;
  stopCamera();
