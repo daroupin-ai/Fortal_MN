@@ -1,0 +1,181 @@
+@font-face{font-family:'Gugi';src:url('fonts/Gugi-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:'Nanum Myeongjo';src:url('fonts/NanumMyeongjo-ExtraBold.ttf') format('truetype');font-weight:700 900;font-display:swap}
+@font-face{font-family:'Gowun Batang';src:url('fonts/GowunBatang-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:'Gowun Batang';src:url('fonts/GowunBatang-Bold.ttf') format('truetype');font-weight:700;font-display:swap}
+@font-face{font-family:'Cormorant Garamond';src:url('fonts/CormorantGaramond[wght].ttf') format('truetype');font-weight:300 700;font-display:swap}
+@font-face{font-family:'Cormorant Garamond';src:url('fonts/CormorantGaramond-Italic[wght].ttf') format('truetype');font-style:italic;font-weight:300 700;font-display:swap}
+@font-face{font-family:'UnifrakturMaguntia';src:url('fonts/UnifrakturMaguntia-Book.ttf') format('truetype');font-weight:400;font-display:swap}
+
+0,500;0,600;1,400;1,500&family=Gowun+Batang:wght@400;700&family=Nanum+Myeongjo:wght@400;700;800&family=UnifrakturMaguntia&display=swap');
+#antique-theatre-suite{--ab-art:url("theatre-art.jpg");--ab-desk:#17130f;--ab-leather:#312319;--ab-parchment:#d9c096;--ab-ink:#3b2c20;--ab-secondary:#70553a;--ab-red:#6d2630;--ab-gold:#a7854d;--ab-title:'Gugi',sans-serif;--ab-text:'Gugi',sans-serif;--ab-latin:'Gugi',sans-serif;--ab-gothic:'Gugi',sans-serif;width:100%}
+#antique-theatre-suite *{box-sizing:border-box}#antique-theatre-suite h1,#antique-theatre-suite h2,#antique-theatre-suite p{margin:0}#antique-theatre-suite .ab-theatre{position:relative;isolation:isolate;background:radial-gradient(ellipse at 48% 32%,#473622 0%,#271f16 42%,var(--ab-desk) 82%);color:#cdb88f;border:1px solid #6d5436;padding:0 26px;font:400 14px/1.8 var(--ab-text);box-shadow:inset 0 0 0 5px var(--ab-desk),inset 0 0 0 6px #69523355;overflow:hidden}#antique-theatre-suite .ab-masthead{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:96px;padding:20px 10px 17px;border-bottom:1px solid #9e80494a}#antique-theatre-suite .ab-brand{display:flex;align-items:center;gap:15px;font:400 30px/1.15 var(--ab-gothic);color:#d1b77c;text-shadow:0 1px #000}#antique-theatre-suite .ab-brand small{display:block;font:400 11px/1.6 var(--ab-text);letter-spacing:.25em;color:#b29c75;margin-top:9px}#antique-theatre-suite .ab-lily{font:36px/1 Georgia,serif;color:var(--ab-gold)}#antique-theatre-suite .ab-header-note{font-size:12px;letter-spacing:.07em;color:#b29c75}
+#antique-theatre-suite .ab-desk{padding:37px 18px 41px}#antique-theatre-suite .ab-cover{padding:11px 10px 14px;position:relative;background:linear-gradient(90deg,#21170f,#4b3020 45%,#21150f 50%,#513523 55%,#24170f);border:1px solid #80603a;border-radius:7px 12px 9px 5px;box-shadow:0 23px 40px #0009,0 4px 0 #17100c,inset 0 0 0 4px #281b13,inset 0 0 0 5px #785836;transform:rotate(-.35deg)}#antique-theatre-suite .ab-cover:before{content:'';position:absolute;left:21px;right:19px;bottom:5px;height:11px;background:repeating-linear-gradient(0deg,#b79a6b 0px,#b79a6b 1px,#725638 1px,#725638 2px);border-radius:0 0 50% 50%;opacity:.7}#antique-theatre-suite .ab-book{display:grid;grid-template-columns:1fr 1fr;position:relative;isolation:isolate;border-radius:3px;box-shadow:0 4px 5px #100a0866}
+#antique-theatre-suite .ab-page{min-width:0;position:relative;display:flex;flex-direction:column;background-color:var(--ab-parchment);background-image:radial-gradient(ellipse at 3% 6%,#84532030,transparent 23%),radial-gradient(ellipse at 95% 93%,#9f712e38,transparent 27%),radial-gradient(ellipse at 18% 79%,#8b5a1c12,transparent 14%),radial-gradient(ellipse at 60% 46%,#fff2cd55,transparent 65%),repeating-linear-gradient(87deg,#73501b07 0px,#73501b07 1px,transparent 1px,transparent 4px);color:var(--ab-ink);min-height:727px;padding:33px 40px 21px}#antique-theatre-suite .ab-page:before{content:'';position:absolute;inset:10px 11px;border:1px solid #97734042;pointer-events:none}#antique-theatre-suite .ab-left{border-radius:6px 45% 3px 2px / 3px 4px 3px 2px;box-shadow:inset 9px 0 20px #8a5d262e,inset -26px 0 32px #6f451d45;background-position:left top}#antique-theatre-suite .ab-right{border-radius:42% 4px 2px 3px / 4px 3px 3px 2px;box-shadow:inset -9px 0 22px #8a5d262e,inset 25px 0 33px #6f451d40;background-color:#e0caa4;padding-left:43px;padding-right:43px;text-align:center}#antique-theatre-suite .ab-spine{position:absolute;left:50%;top:0;bottom:0;width:32px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,#4b2c0e29 34%,#4b2c0e55 48%,#ecd5ac44 53%,#4b2c0e1c 65%,transparent);z-index:3;pointer-events:none}#antique-theatre-suite .ab-cover-corner{position:absolute;width:30px;height:30px;z-index:5;pointer-events:none;border-color:#ad8546;border-style:double}#antique-theatre-suite .ab-cover-tl{top:0;left:0;border-width:4px 0 0 4px;border-radius:6px 0 0 0}#antique-theatre-suite .ab-cover-br{bottom:0;right:0;border-width:0 4px 4px 0;border-radius:0 0 6px 0}
+#antique-theatre-suite .ab-running-title{display:block;font:400 11px/1.6 var(--ab-latin);letter-spacing:.16em;color:#725133;min-height:18px}#antique-theatre-suite .ab-running-title>span{padding:0 7px}#antique-theatre-suite .ab-title-ornament{font:46px/1 Georgia,serif;color:#89622f;margin:24px 0 13px}#antique-theatre-suite h1{font:400 clamp(36px,5vw,49px)/1.45 var(--ab-title);letter-spacing:.1em;color:#59212a;text-shadow:0 1px #e8d5af}#antique-theatre-suite .ab-english-title{font:400 22px/1.6 var(--ab-latin);margin-top:8px;color:#805936}#antique-theatre-suite .ab-title-rule{height:20px;width:160px;display:flex;align-items:center;gap:9px;margin:16px 0 19px;color:#94733d}#antique-theatre-suite .ab-title-rule:before,#antique-theatre-suite .ab-title-rule:after{content:'';flex:1;height:1px;background:#9a78454f}#antique-theatre-suite .ab-title-rule span{font:9px Georgia,serif}#antique-theatre-suite .ab-introduction{font-size:14px;line-height:2.15;color:#5f432d;word-break:keep-all}#antique-theatre-suite .ab-initial{float:left;display:block;font:400 39px/1.28 var(--ab-title);padding:4px 7px 2px;margin:3px 11px 0 0;border:3px double #9e7847;color:var(--ab-red);background:repeating-linear-gradient(45deg,transparent 0px,transparent 5px,#9e784714 5px,#9e784714 6px)}
+#antique-theatre-suite .ab-chapters{list-style:none;padding:0;margin:30px 0 0;display:flex;flex-direction:column;gap:20px}#antique-theatre-suite .ab-chapters li{display:flex;align-items:center;gap:15px;position:relative;padding:13px 0 13px 13px;border-left:1px solid #96754955;color:#786046}#antique-theatre-suite .ab-chapters .ab-current{background:linear-gradient(90deg,#6d263013,transparent 90%);border-left:2px solid var(--ab-red);color:var(--ab-red)}#antique-theatre-suite .ab-numeral{font:400 38px/1.15 var(--ab-latin);min-width:25px;text-align:center}#antique-theatre-suite .ab-chapters h2{font:400 16px/1.6 var(--ab-title);word-break:keep-all}#antique-theatre-suite .ab-chapters p{font:400 11px/1.7 var(--ab-text);margin-top:5px;color:#80603f}#antique-theatre-suite .ab-step-ornament{margin-left:auto;color:#936337;font:25px Georgia,serif}#antique-theatre-suite .ab-left-bottom{margin-top:auto;padding-top:28px;display:flex;justify-content:space-between;align-items:center;gap:10px}#antique-theatre-suite .ab-margin-note{font-size:11px;line-height:1.9;color:#7d5a3b}#antique-theatre-suite .ab-flourish{font:46px/1 Georgia,serif;color:#9a7745;transform:rotate(-15deg)}#antique-theatre-suite .ab-page-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:9px;color:#846441;border-top:1px solid #8b673333;padding-top:13px;margin-top:24px}#antique-theatre-suite .ab-page-number{font:400 17px/1 var(--ab-latin)}
+#antique-theatre-suite .ab-ribbon{position:absolute;top:-12px;right:27px;width:35px;height:80px;background:linear-gradient(90deg,#4d1421,#843c44 42%,#642330 79%,#46101c);clip-path:polygon(0 0,100% 0,100% 100%,50% 83%,0 100%);box-shadow:inset 3px 0 #be8b5955,inset -3px 0 #2e0a1655;color:#d7b17b;display:flex;justify-content:center;z-index:4}#antique-theatre-suite .ab-ribbon span{font:400 24px/1 var(--ab-latin);margin-top:26px}#antique-theatre-suite .ab-right>.ab-running-title{padding-right:25px;font-size:11px}#antique-theatre-suite .ab-portrait-block{position:relative;margin:25px auto 0;max-width:260px;width:100%;padding:0 17px}#antique-theatre-suite .ab-portrait-frame{height:250px;max-width:222px;margin:auto;border:5px double #98743e;border-radius:49% 49% 4px 4px;position:relative;background:#30271b;box-shadow:0 0 0 4px #d5ba8d,0 0 0 5px #a1824e88,0 6px 12px #5a341722;padding:5px}#antique-theatre-suite .ab-portrait{height:100%;border-radius:49% 49% 0 0;background-image:linear-gradient(0deg,#4a291444,transparent 50%),var(--ab-art);background-size:cover,auto 245%;background-position:center,50% 71%;filter:saturate(.58) sepia(.16) contrast(.96)}#antique-theatre-suite .ab-portrait-crest{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font:28px/1 Georgia,serif;color:#8b6231;background:#dbc39b;padding:0 8px}#antique-theatre-suite .ab-portrait-side{position:absolute;top:96px;writing-mode:vertical-rl;font:400 9px/1 var(--ab-latin);letter-spacing:.19em;color:#8a653d}#antique-theatre-suite .ab-side-left{left:0;transform:rotate(180deg)}#antique-theatre-suite .ab-side-right{right:0}#antique-theatre-suite .ab-figure-label{font:400 12px/1.6 var(--ab-latin);margin:13px 0 17px;color:#82603d}#antique-theatre-suite .ab-figure-label span{padding:0 7px}#antique-theatre-suite .ab-right h2{font:400 29px/1.55 var(--ab-title);letter-spacing:.025em;color:#4b3023}#antique-theatre-suite .ab-instruction{font-size:12px;line-height:1.95;color:#725136;margin-top:15px}#antique-theatre-suite .ab-waiting{display:flex;align-items:center;justify-content:center;gap:9px;font-size:11px;color:#795639;border-top:1px solid #94703b4d;border-bottom:1px solid #94703b4d;padding:12px 0;margin:20px 0 0}#antique-theatre-suite .ab-waiting-diamond{font:18px/1 Georgia,serif;color:var(--ab-red)}#antique-theatre-suite .ab-next-row{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:17px}#antique-theatre-suite .ab-next{background:#cbb08770;border:1px solid #99774e80;padding:10px 14px;min-height:43px;font:400 12px/1.7 var(--ab-text);color:#80613f;display:flex;gap:13px;align-items:center;justify-content:space-between;box-shadow:inset 0 0 0 3px #dac29d;cursor:default}#antique-theatre-suite .ab-next>span{font:400 21px/1 var(--ab-latin)}#antique-theatre-suite .ab-wax{width:60px;height:60px;flex-shrink:0;border-radius:47% 50% 46% 51%;background:radial-gradient(circle at 38% 30%,#88414b,#632330 63%,#421522);box-shadow:0 3px 5px #5c321849,inset 0 0 0 4px #4f1b27,inset 0 0 0 5px #b2785966;color:#c28b68;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-12deg)}#antique-theatre-suite .ab-wax>span{font:400 31px/1 var(--ab-gothic);text-shadow:0 1px #330b17}#antique-theatre-suite .ab-wax small{font:400 7px/1.5 var(--ab-latin);letter-spacing:.13em}#antique-theatre-suite .ab-right .ab-page-footer{margin-top:auto;padding-top:13px}#antique-theatre-suite .ab-theatre-footer{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:16px 10px 20px;border-top:1px solid #9e80494a;font-size:11px;color:#bba17a}#antique-theatre-suite .ab-theatre-footer i{font-style:normal;padding:0 9px;color:#96753e}
+@media(max-width:850px){#antique-theatre-suite .ab-theatre{padding:0 17px}#antique-theatre-suite .ab-desk{padding:30px 4px 34px}#antique-theatre-suite .ab-page{padding:30px 25px 20px;min-height:750px}#antique-theatre-suite .ab-right{padding-left:27px;padding-right:27px}#antique-theatre-suite h1{font-size:40px}#antique-theatre-suite .ab-chapters{gap:15px}#antique-theatre-suite .ab-chapters li{gap:10px;padding-left:10px}#antique-theatre-suite .ab-chapters h2{font-size:14px}#antique-theatre-suite .ab-numeral{font-size:34px}#antique-theatre-suite .ab-step-ornament{display:none}#antique-theatre-suite .ab-introduction{font-size:13px}#antique-theatre-suite .ab-right h2{font-size:27px}#antique-theatre-suite .ab-running-title{font-size:10px;letter-spacing:.12em}#antique-theatre-suite .ab-ribbon{right:18px;width:29px;height:70px}#antique-theatre-suite .ab-ribbon span{font-size:21px}#antique-theatre-suite .ab-right>.ab-running-title{font-size:10px}#antique-theatre-suite .ab-portrait-block{padding:0 12px}#antique-theatre-suite .ab-portrait-frame{height:240px}#antique-theatre-suite .ab-next{font-size:11px;padding:10px;gap:8px}#antique-theatre-suite .ab-wax{width:52px;height:52px}#antique-theatre-suite .ab-next-row{gap:9px}#antique-theatre-suite .ab-waiting{font-size:10px;gap:6px}#antique-theatre-suite .ab-english-title{font-size:20px}#antique-theatre-suite .ab-left-bottom{gap:5px}#antique-theatre-suite .ab-margin-note{font-size:10px}#antique-theatre-suite .ab-flourish{font-size:36px}}
+@media(max-width:600px){#antique-theatre-suite .ab-theatre{padding:0 13px}#antique-theatre-suite .ab-masthead{min-height:90px;padding:18px 5px;flex-wrap:wrap;gap:10px}#antique-theatre-suite .ab-brand{font-size:26px;gap:11px}#antique-theatre-suite .ab-lily{font-size:28px}#antique-theatre-suite .ab-brand small{font-size:10px}#antique-theatre-suite .ab-header-note{font-size:10px;margin-left:39px}#antique-theatre-suite .ab-desk{padding:25px 0 28px}#antique-theatre-suite .ab-cover{transform:none;padding:8px 7px 11px}#antique-theatre-suite .ab-book{grid-template-columns:1fr}#antique-theatre-suite .ab-spine{display:none}#antique-theatre-suite .ab-page{min-height:0;padding:30px 27px 20px}#antique-theatre-suite .ab-left{box-shadow:inset 0 -17px 24px #6f451d30,inset 0 0 25px #8a5d2620;border-radius:2px}#antique-theatre-suite .ab-right{box-shadow:inset 0 17px 24px #6f451d30,inset 0 0 25px #8a5d2620;border-top:2px solid #8d6c3c66;border-radius:2px;padding:36px 28px 20px}#antique-theatre-suite h1{font-size:44px}#antique-theatre-suite .ab-title-ornament{margin:20px 0 12px}#antique-theatre-suite .ab-introduction{font-size:14px}#antique-theatre-suite .ab-chapters h2{font-size:15px}#antique-theatre-suite .ab-chapters{margin-top:25px}#antique-theatre-suite .ab-margin-note{font-size:11px}#antique-theatre-suite .ab-left-bottom{padding-top:25px}#antique-theatre-suite .ab-right>.ab-running-title{padding-right:12px;font-size:11px}#antique-theatre-suite .ab-ribbon{top:0;right:20px;height:65px}#antique-theatre-suite .ab-portrait-block{max-width:245px;margin-top:30px}#antique-theatre-suite .ab-portrait-frame{height:260px}#antique-theatre-suite .ab-right h2{font-size:29px}#antique-theatre-suite .ab-waiting{font-size:11px}#antique-theatre-suite .ab-next-row{margin:20px 0 23px}#antique-theatre-suite .ab-next{font-size:12px;padding:12px 15px}#antique-theatre-suite .ab-wax{width:58px;height:58px}#antique-theatre-suite .ab-page-footer{font-size:9px;margin-top:23px}#antique-theatre-suite .ab-theatre-footer{flex-wrap:wrap;gap:6px;padding:14px 4px 17px;font-size:10px}#antique-theatre-suite .ab-theatre-footer>span{width:100%}}
+
+
+#antique-theatre-suite [hidden]{display:none!important}
+#antique-theatre-suite .ab-theatre{min-height:1030px;display:flex;flex-direction:column}
+#antique-theatre-suite .ab-theatre-footer{margin-top:auto}
+#antique-theatre-suite .ab-desk{flex:1;display:flex;align-items:center}
+#antique-theatre-suite .ab-cover{width:100%}
+#antique-theatre-suite .ab-page{min-height:750px}
+#antique-theatre-suite .ab-page-footer{margin-top:auto}
+#antique-theatre-suite button{font-family:var(--ab-text)}
+#antique-theatre-suite button[aria-disabled=true]{cursor:default}
+#antique-theatre-suite .as-button{display:flex;align-items:center;justify-content:space-between;gap:15px;width:100%;min-height:52px;padding:12px 20px;border:1px solid #a8834a;border-radius:1px;font:400 14px/1.7 var(--ab-text);letter-spacing:.03em;box-shadow:inset 0 0 0 3px #45121d,inset 0 0 0 4px #ad835366}
+#antique-theatre-suite .as-primary{background:linear-gradient(100deg,#7a323b,#55202b);color:#f0dbb8}
+#antique-theatre-suite .as-button>span{font:400 26px/1 var(--ab-latin);color:#d4b37d}
+#antique-theatre-suite .as-text-button{border:0;background:transparent;color:#755339;min-height:44px;padding:10px 0;font:400 12px/1.8 var(--ab-text);text-decoration:underline;text-decoration-color:#95714366;text-underline-offset:5px}
+#antique-theatre-suite .as-invitation-page h1{font-size:48px;line-height:1.45;letter-spacing:.12em}
+#antique-theatre-suite .as-invitation-page .ab-title-ornament{margin-top:22px}
+#antique-theatre-suite .as-invitation-page .ab-english-title{font-size:20px}
+#antique-theatre-suite .as-entry-actions{margin-top:26px}
+#antique-theatre-suite .as-invitation-page .ab-left-bottom{padding-top:17px;padding-bottom:24px}
+#antique-theatre-suite .as-frontispiece{padding-top:35px}
+#antique-theatre-suite .as-full-portrait{position:relative;margin:40px 0 22px;border-radius:49% 49% 2px 2px;border:6px double #98743e;padding:7px;height:440px;box-shadow:0 0 0 5px #d4b88a,0 0 0 6px #9d7b4588,0 6px 16px #58371c22;background:#34291d}
+#antique-theatre-suite .as-portrait-crown{position:absolute;top:-25px;left:50%;transform:translateX(-50%);font:37px/1 Georgia,serif;color:#8f6839;background:#dac29b;padding:0 12px;z-index:1}
+#antique-theatre-suite .as-stage-picture{height:100%;border-radius:49% 49% 0 0;background-image:linear-gradient(0deg,#3c291a55,transparent 40%),var(--ab-art);background-size:cover;background-position:50% 50%;filter:saturate(.62) sepia(.15)}
+#antique-theatre-suite .as-picture-caption{font:400 13px/1.7 var(--ab-latin);text-align:center;color:#805d39}
+#antique-theatre-suite .as-picture-caption span{padding:0 6px}
+#antique-theatre-suite .as-character-caption{font:400 20px/1.85 var(--ab-title);color:#65472f;margin:20px 0 26px}
+#antique-theatre-suite .as-mirror-page{align-items:stretch}
+#antique-theatre-suite .as-mirror{height:380px;position:relative;border:7px double #92713e;border-radius:49% 49% 3px 3px;padding:8px;margin:40px 4px 22px;background:linear-gradient(100deg,#3f3423,#977f52 32%,#4c3b23 60%,#ab8c52 83%,#453721);box-shadow:0 0 0 5px #c9ab7a,0 0 0 6px #936f3966,0 8px 20px #57341833}
+#antique-theatre-suite .as-mirror-crown{position:absolute;top:-27px;left:50%;transform:translateX(-50%);font:39px/1 Georgia,serif;background:#d8bf97;padding:0 11px;color:#816033;z-index:1}
+#antique-theatre-suite .as-mirror-glass{height:100%;border-radius:49% 49% 0 0;background:linear-gradient(120deg,transparent 20%,#bbc2a914 25%,transparent 40%),radial-gradient(ellipse at 40% 30%,#44463b,#24251f 72%);box-shadow:inset 0 0 40px #0b100dcc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#d3c7aa;text-align:center;padding:20px}
+#antique-theatre-suite .as-mirror-glass svg{width:65px;height:65px;stroke-width:1;color:#a1ab9b}
+#antique-theatre-suite .as-mirror-glass>span{font-size:13px}
+#antique-theatre-suite .as-mirror-glass small{font:400 11px/1.6 var(--ab-text);padding:4px 12px;border:1px solid #9b956855;color:#bcb59a}
+#antique-theatre-suite .as-signals{display:flex;justify-content:space-around;margin:25px 0 20px;border-block:1px solid #8c683b44;padding:13px 0;color:#664a31;text-align:center;font-size:13px}
+#antique-theatre-suite .as-signals>span{flex:1}
+#antique-theatre-suite .as-signals>span+span{border-left:1px solid #8c683b44}
+#antique-theatre-suite .as-signals small{display:block;font-size:11px;color:#89683f;margin-top:6px}
+#antique-theatre-suite .as-mirror-note{text-align:center;font-size:13px;line-height:2;color:#775538;margin-bottom:28px}
+#antique-theatre-suite .as-preparation-copy{text-align:left}
+#antique-theatre-suite .as-preparation-copy h1{font-size:34px;line-height:1.65;letter-spacing:.035em}
+#antique-theatre-suite .as-preparation-copy .ab-title-ornament{margin-top:29px}
+#antique-theatre-suite .as-preparation-copy .ab-english-title{font-size:18px}
+#antique-theatre-suite .as-preparation-copy .ab-title-rule{margin:15px 0}
+#antique-theatre-suite .as-directions{list-style:none;padding:0;margin:9px 0 25px;display:flex;flex-direction:column;gap:23px}
+#antique-theatre-suite .as-directions>li{display:flex;gap:15px;align-items:flex-start}
+#antique-theatre-suite .as-directions>li>span{font:400 33px/1.2 var(--ab-latin);color:var(--ab-red);min-width:22px}
+#antique-theatre-suite .as-directions strong{font:400 14px/1.8 var(--ab-title)}
+#antique-theatre-suite .as-directions p{font-size:12px;line-height:1.9;color:#765335;margin-top:7px}
+#antique-theatre-suite .as-privacy{font-size:11px;line-height:1.9;padding:16px 0 25px;border-top:1px solid #94703b44;margin-top:11px;color:#775437}
+#antique-theatre-suite .as-game{background:#17130f}
+#antique-theatre-suite .as-game .ab-masthead{background:#17130fee;z-index:2}
+#antique-theatre-suite .as-theatre-scenery{position:absolute;inset:95px 12px 55px;z-index:-1;background-image:linear-gradient(90deg,#17130fc9,transparent 24%,transparent 76%,#17130fc9),linear-gradient(0deg,#17130f,transparent 25%,transparent 80%,#17130f),var(--ab-art);background-size:cover,cover,auto 104%;background-repeat:no-repeat;background-position:center,center,50% 65%;filter:saturate(.65) sepia(.12)}
+#antique-theatre-suite .as-dark-button{color:#e0c79d;background:linear-gradient(110deg,#3c2d1e,#271d14);border:1px solid #9b7842;box-shadow:inset 0 0 0 3px #20170f;min-height:44px;padding:10px 18px;font:400 12px/1.8 var(--ab-text)}
+#antique-theatre-suite .as-stage-area{position:relative;min-height:820px;flex:1;padding:35px 12px 30px;display:flex;flex-direction:column;justify-content:space-between}
+#antique-theatre-suite .as-scoreboard{align-self:center;position:relative;display:flex;justify-content:center;background:radial-gradient(ellipse at 20% 30%,#f2dfba55,transparent 70%),#d9bd8d;color:#4d3221;gap:30px;padding:18px 35px 33px;border:5px double #a28048;box-shadow:0 8px 35px #0009,inset 0 0 22px #96662b3b}
+#antique-theatre-suite .as-scoreboard>div{min-width:80px;text-align:center}
+#antique-theatre-suite .as-scoreboard>div+div{border-left:1px solid #9b77434d;padding-left:30px}
+#antique-theatre-suite .as-scoreboard small{font:400 12px/1.6 var(--ab-text)}
+#antique-theatre-suite .as-scoreboard strong{display:block;font:400 43px/1.25 var(--ab-latin);font-variant-numeric:tabular-nums;color:#5d252c}
+#antique-theatre-suite .as-score-crown{position:absolute;top:-23px;left:50%;transform:translateX(-50%);font:34px/1 Georgia,serif;color:#c39a5d;text-shadow:0 2px #1c110a}
+#antique-theatre-suite .as-score-foot{position:absolute;bottom:10px;left:0;right:0;text-align:center;font:400 9px/1.4 var(--ab-latin);letter-spacing:.18em;color:#89633d}
+#antique-theatre-suite .as-combo{position:absolute;top:220px;right:15px;display:flex;gap:14px;align-items:center;border-left:2px solid #9d7b44;background:#21190fef;padding:12px 17px;box-shadow:3px 4px 14px #0004}
+#antique-theatre-suite .as-combo>span{font:400 39px/1 var(--ab-latin);color:#b8c2af}
+#antique-theatre-suite .as-combo>div{font:400 13px/1.8 var(--ab-text);color:#e0c59c}
+#antique-theatre-suite .as-combo small{display:block;font-size:11px;color:#bba17c}
+#antique-theatre-suite .as-stage-bottom{display:grid;grid-template-columns:160px 1fr 60px;gap:25px;align-items:end}
+#antique-theatre-suite .as-small-mirror{position:relative;border:4px double #9d7b46;border-radius:40% 40% 2px 2px;padding:20px 13px 13px;background:#2d2d24;min-height:115px;color:#d6c3a0;box-shadow:0 4px 15px #0007}
+#antique-theatre-suite .as-small-mirror>span{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font:22px/1 Georgia,serif;color:#a7854d;background:#24221b;padding:0 5px}
+#antique-theatre-suite .as-small-mirror>div{display:flex;align-items:center;gap:10px}
+#antique-theatre-suite .as-small-mirror svg{width:30px;height:30px;color:#b1b9a5}
+#antique-theatre-suite .as-small-mirror p{font:400 12px/1.8 var(--ab-text)}
+#antique-theatre-suite .as-small-mirror small{display:block;font-size:10px;color:#bac2ad}
+#antique-theatre-suite .as-cue{position:relative;padding:24px 20px 21px;background:#241b12f5;color:#e4caa0;border:4px double #9f7944;box-shadow:0 7px 25px #0005;text-align:center}
+#antique-theatre-suite .as-cue>span{position:absolute;top:-23px;left:50%;transform:translateX(-50%);font:31px/1 Georgia,serif;color:#ac8850;padding:0 11px;background:#241b12}
+#antique-theatre-suite .as-cue h2{font:400 21px/1.8 var(--ab-title)}
+#antique-theatre-suite .as-cue p{font:400 12px/1.9 var(--ab-text);margin-top:9px;color:#c8ac82}
+#antique-theatre-suite .as-stage-seal{padding-bottom:20px}
+#antique-theatre-suite .as-charter-desk{flex:1;padding:32px 20px 38px;display:flex;align-items:center;justify-content:center}
+#antique-theatre-suite .as-charter-cover{width:500px;max-width:100%;padding:9px;background:linear-gradient(100deg,#291b12,#513522 55%,#2c1e14);border:1px solid #8c6839;border-radius:3px;box-shadow:0 22px 45px #0008;transform:rotate(-.4deg)}
+#antique-theatre-suite .as-charter{min-height:770px;padding:35px 49px 25px;text-align:center;box-shadow:inset 0 0 45px #8c5d2633;border:4px double #ac8550}
+#antique-theatre-suite .as-charter:before{inset:7px}
+#antique-theatre-suite .as-charter .ab-running-title{font-size:10px;padding-right:13px}
+#antique-theatre-suite .as-charter .ab-title-ornament{margin:26px 0 15px}
+#antique-theatre-suite .as-charter h1{font-size:39px;letter-spacing:.06em}
+#antique-theatre-suite .as-charter .ab-english-title{font-size:20px}
+#antique-theatre-suite .as-charter .ab-title-rule{margin:18px auto}
+#antique-theatre-suite .as-result-message{font-size:13px;line-height:2;color:#745034}
+#antique-theatre-suite .as-final-score{border-top:1px solid #946c3a55;border-bottom:1px solid #946c3a55;margin:24px 0;padding:16px 0 20px}
+#antique-theatre-suite .as-final-score>span{display:block;font:400 12px/1.8 var(--ab-text);color:#7b5636}
+#antique-theatre-suite .as-final-score>span i{font-style:normal;padding:0 8px}
+#antique-theatre-suite .as-final-score strong{display:block;font:400 80px/1.25 var(--ab-latin);color:#682631}
+#antique-theatre-suite .as-final-score small{font:400 15px/1 var(--ab-text);margin-left:5px}
+#antique-theatre-suite .as-charter-signature{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:13px 0 23px;text-align:left}
+#antique-theatre-suite .as-charter-signature>span:first-child{font:400 23px/1.4 var(--ab-gothic);color:#755135}
+#antique-theatre-suite .as-charter-signature small{display:block;font:400 10px/1.8 var(--ab-text);margin-top:3px;letter-spacing:.12em}
+@media(max-width:850px){
+ #antique-theatre-suite .as-invitation-page h1{font-size:41px}
+ #antique-theatre-suite .as-invitation-page .ab-english-title{font-size:18px}
+ #antique-theatre-suite .as-invitation-page .ab-introduction{font-size:12px}
+ #antique-theatre-suite .as-full-portrait{height:410px}
+ #antique-theatre-suite .as-character-caption{font-size:18px}
+ #antique-theatre-suite .as-preparation-copy h1{font-size:30px}
+ #antique-theatre-suite .as-preparation-copy .ab-english-title{font-size:16px}
+ #antique-theatre-suite .as-mirror{height:350px}
+ #antique-theatre-suite .as-mirror-glass{padding:15px 8px}
+ #antique-theatre-suite .as-mirror-glass>span{font-size:11px}
+ #antique-theatre-suite .as-button{font-size:12px;padding:12px 15px}
+ #antique-theatre-suite .as-text-button{font-size:11px}
+ #antique-theatre-suite .as-directions strong{font-size:12px}
+ #antique-theatre-suite .as-directions p{font-size:11px}
+ #antique-theatre-suite .as-directions{gap:22px}
+ #antique-theatre-suite .as-stage-bottom{grid-template-columns:130px 1fr;gap:20px}
+ #antique-theatre-suite .as-stage-seal{display:none}
+ #antique-theatre-suite .as-cue h2{font-size:19px}
+ #antique-theatre-suite .as-cue p{font-size:11px}
+ #antique-theatre-suite .as-small-mirror{padding:23px 9px 12px}
+}
+@media(max-width:600px){
+ #antique-theatre-suite .ab-theatre{min-height:1640px}
+ #antique-theatre-suite .ab-desk{align-items:center}
+ #antique-theatre-suite .ab-page{min-height:0}
+ #antique-theatre-suite .ab-page-footer{margin-top:23px}
+ #antique-theatre-suite .as-invitation-page{min-height:660px}
+ #antique-theatre-suite .as-frontispiece{min-height:660px}
+ #antique-theatre-suite .as-invitation-page h1{font-size:43px}
+ #antique-theatre-suite .as-invitation-page .ab-introduction{font-size:13px}
+ #antique-theatre-suite .as-invitation-page .ab-left-bottom{margin-top:auto}
+ #antique-theatre-suite .as-full-portrait{height:395px;max-width:260px;width:100%;align-self:center;margin-top:35px}
+ #antique-theatre-suite .as-character-caption{font-size:20px;margin:20px 0}
+ #antique-theatre-suite .as-mirror-page{min-height:650px}
+ #antique-theatre-suite .as-preparation-copy{min-height:660px;padding-top:35px}
+ #antique-theatre-suite .as-mirror{height:350px;max-width:250px;width:100%;align-self:center}
+ #antique-theatre-suite .as-mirror-glass>span{font-size:12px}
+ #antique-theatre-suite .as-preparation-copy h1{font-size:34px}
+ #antique-theatre-suite .as-directions strong{font-size:14px}
+ #antique-theatre-suite .as-directions p{font-size:12px}
+ #antique-theatre-suite .as-button{font-size:13px}
+ #antique-theatre-suite .as-preparation-copy .ab-title-rule{margin:17px 0}
+ #antique-theatre-suite .as-game .ab-masthead{gap:16px}
+ #antique-theatre-suite .as-game .ab-brand{font-size:25px}
+ #antique-theatre-suite .as-stage-area{min-height:1380px;padding:42px 0 35px}
+ #antique-theatre-suite .as-scoreboard{gap:18px;padding:18px 18px 33px;width:100%;max-width:310px}
+ #antique-theatre-suite .as-scoreboard>div{min-width:60px}
+ #antique-theatre-suite .as-scoreboard>div+div{padding-left:18px}
+ #antique-theatre-suite .as-scoreboard strong{font-size:38px}
+ #antique-theatre-suite .as-theatre-scenery{inset:130px 0 55px;background-size:cover,cover,auto 70%;background-position:center,center,50% 38%}
+ #antique-theatre-suite .as-combo{top:260px;right:0}
+ #antique-theatre-suite .as-stage-bottom{grid-template-columns:1fr;gap:25px}
+ #antique-theatre-suite .as-small-mirror{order:2;width:150px}
+ #antique-theatre-suite .as-cue{padding:26px 13px 22px}
+ #antique-theatre-suite .as-cue h2{font-size:18px}
+ #antique-theatre-suite .as-cue p{font-size:11px}
+ #antique-theatre-suite .as-charter-desk{padding:30px 0}
+ #antique-theatre-suite .as-charter-cover{transform:none;padding:7px}
+ #antique-theatre-suite .as-charter{min-height:800px;padding:34px 24px 22px}
+ #antique-theatre-suite .as-charter h1{font-size:30px;letter-spacing:.025em}
+ #antique-theatre-suite .as-charter .ab-english-title{font-size:18px}
+ #antique-theatre-suite .as-charter .ab-running-title{font-size:9px;padding-right:18px;letter-spacing:.09em}
+ #antique-theatre-suite .as-charter .ab-title-ornament{margin-top:35px}
+ #antique-theatre-suite .as-charter-signature>span:first-child{font-size:19px}
+ #antique-theatre-suite .as-charter .ab-page-footer{font-size:9px}
+}

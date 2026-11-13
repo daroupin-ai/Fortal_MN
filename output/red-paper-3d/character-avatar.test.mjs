@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {characterTargets,easeCharacterPose,characterMouthWorld,characterPlacement,comfortableHandSample,feedingMotion} from './character-avatar.mjs';
+import {characterTargets,easeCharacterPose,characterMouthWorld,characterPlacement,comfortableHandSample,feedingMotion,feedingDuration} from './character-avatar.mjs';
 import {mouthSample} from './hand-interaction.mjs';
 const rest=characterTargets(),active=characterTargets([{x:.8,y:.2},{x:.2,y:.3}],{open:true});
 assert.ok(active.paws[0][1]>0&&active.paws[1][1]>0);
@@ -22,15 +22,27 @@ const mouth=mouthSample(lips,1);
 assert.ok(mouth.open&&Math.abs(mouth.ratio-.4)<1e-6,'Meter and open state agree');
 assert.equal(mouth.wide,false,'Normal opening does not trigger automatic feeding');
 assert.equal(mouthSample([{x:.5,y:.47},{x:.5,y:.53},...lips.slice(2)],1).wide,true);
-assert.equal(feedingMotion(0).travel,0);
-assert.equal(feedingMotion(70).travel,.5);
-assert.equal(feedingMotion(139).crunch,-1,'Sound waits until the hand reaches the mouth');
-assert.equal(feedingMotion(140).travel,1);
-assert.equal(feedingMotion(140).scale,1);
-assert.equal(feedingMotion(140).crunch,0);
-assert.equal(feedingMotion(270).crunch,1);
-assert.equal(feedingMotion(400).scale,0);
-assert.equal(feedingMotion(400).done,true);
+assert.equal(feedingMotion(0,.35).jaw,.35,'Jaw starts from the current pose');
+assert.equal(feedingMotion(120).travel,.5);
+assert.equal(feedingMotion(240).travel,1);
+assert.equal(feedingMotion(280).scale,1,'The doll stays full-size until it reaches the mouth');
+assert.equal(feedingMotion(319).crunch,-1,'Chew sound waits for mouth contact');
+assert.equal(feedingMotion(320).crunch,0);assert.equal(feedingMotion(440).crunch,1);
+assert.equal(feedingMotion(470).scale,0);assert.equal(feedingMotion(470).release,0);
+assert.equal(feedingMotion(feedingDuration-1).done,false);
+assert.equal(feedingMotion(feedingDuration).done,true);
+assert.equal(feedingMotion(feedingDuration).release,1,'Hand and jaw fully return to tracking');
+let previous=feedingMotion(0);
+for(let t=1;t<=feedingDuration;t++){
+ const m=feedingMotion(t);
+ for(const key of ['travel','scale','lift','jaw','release','consume'])assert.ok(Number.isFinite(m[key])&&m[key]>=-1e-8&&m[key]<=1.00000001,key+' stays bounded');
+ assert.ok(m.travel>=previous.travel&&m.scale<=previous.scale,'No backward movement or regrowth');
+ previous=m;
+}
+for(const boundary of [220,240,280,350,400,470,feedingDuration]){
+ const before=feedingMotion(boundary-.001,.35),after=feedingMotion(boundary+.001,.35);
+ for(const key of ['travel','scale','lift','jaw','release'])assert.ok(Math.abs(before[key]-after[key])<.0001,'Continuous '+key+' at '+boundary);
+}
 const meta=JSON.parse(await readFile(new URL('./theatre-character.json',import.meta.url),'utf8'));
 const bytes=await readFile(new URL('./theatre-character.bin',import.meta.url));
 assert.equal(bytes.length,meta.vertices*11*4);

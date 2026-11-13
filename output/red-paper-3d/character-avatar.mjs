@@ -17,11 +17,18 @@ export function characterTargets(hands=[],mouth=null){
 export function comfortableHandSample(sample){
  return sample?{...sample,x:clamp(.5+(sample.x-.5)*1.5,0,1),y:clamp(.5+(sample.y-.5)*1.5,0,1)}:null;
 }
-export function feedingMotion(elapsed){
- const travel=clamp(elapsed/140,0,1),chew=clamp((elapsed-140)/260,0,1);
- return {travel:travel*travel*(3-2*travel),scale:1-chew,
-  jaw:elapsed<140?1:.22+.78*Math.abs(Math.cos(chew*Math.PI*2)),
-  crunch:elapsed<140?-1:Math.min(1,Math.floor((elapsed-140)/130)),done:elapsed>=400};
+export const feedingDuration=640;
+export function feedingMotion(elapsed,initialJaw=0){
+ const smooth=v=>{const t=clamp(v,0,1);return t*t*t*(t*(t*6-15)+10);};
+ const travel=smooth(elapsed/240),consume=smooth((elapsed-280)/190);
+ // Ease into the mouth, chew twice, then return control to the live hand/face.
+ let jaw=initialJaw+(1-initialJaw)*smooth(elapsed/220);
+ if(elapsed>=280&&elapsed<350)jaw=1-.7*smooth((elapsed-280)/70);
+ else if(elapsed>=350&&elapsed<400)jaw=.3+.4*smooth((elapsed-350)/50);
+ else if(elapsed>=400)jaw=.7-.55*smooth((elapsed-400)/70);
+ return {travel,lift:16*travel*travel*(1-travel)*(1-travel),consume,scale:1-consume,jaw,
+  release:smooth((elapsed-470)/(feedingDuration-470)),
+  crunch:elapsed<320?-1:elapsed<440?0:1,done:elapsed>=feedingDuration};
 }
 export function easeCharacterPose(pose,target,dt){
  const blend=1-Math.exp(-14*Math.min(.1,Math.max(0,dt)));
