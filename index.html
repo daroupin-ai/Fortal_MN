@@ -1,209 +1,119 @@
 <!doctype html>
-<html lang="ko" class="curtain-waiting">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>붉은 종이 미로 · 3D 공간</title>
-<link rel="icon" href="data:,">
-<style>
-*{box-sizing:border-box}body{margin:0;background:#100b0c;color:#f4e6ce;font-family:Arial,"Malgun Gothic",sans-serif;overflow:hidden}canvas{display:block;width:100vw;height:100vh;touch-action:none;cursor:grab}canvas:active{cursor:grabbing}header{position:absolute;top:32px;left:36px;pointer-events:none}small{color:#c99b82;letter-spacing:4px;font-size:11px}h1{font-size:27px;font-weight:500;letter-spacing:-1px;margin:12px 0}header p{font-size:13px;color:#d6bba8;margin:0}.help{position:absolute;bottom:28px;left:36px;color:#c9ae9d;font-size:12px;line-height:1.8;pointer-events:none}.controls{position:absolute;bottom:30px;right:36px;display:flex;gap:8px}button{border:1px solid #725144;color:#f4e6ce;background:#221619d9;padding:12px 17px;border-radius:4px;font:inherit;font-size:12px;cursor:pointer}button:hover{background:#60312d}button:focus-visible,canvas:focus-visible{outline:2px solid #edd1a4;outline-offset:-3px}#status{position:absolute;top:34px;right:36px;color:#c2a18c;font-size:11px;letter-spacing:1px}.error{position:absolute;inset:35% 15%;background:#28171b;padding:25px;line-height:1.7}.error:empty{display:none}@media(max-width:600px){header{top:22px;left:22px}h1{font-size:22px}.help{left:22px;bottom:82px}.controls{right:22px;bottom:20px}#status{top:auto;bottom:145px;right:22px}}
-</style>
-<style>
-.camera-panel{position:absolute;top:64px;right:36px;width:260px;padding:16px;background:#21171bec;border:1px solid #725144;border-radius:8px;font-size:12px;backdrop-filter:blur(12px)}.camera-panel summary{cursor:pointer;font-size:14px}.camera-panel button{width:100%;margin-top:12px}.camera-panel p{color:#d6bba8;line-height:1.65;margin:10px 0}.camera-panel label{display:block;margin-top:13px}.camera-panel input[type=range]{width:100%;accent-color:#e4b594;margin:8px 0 0}.camera-panel output{float:right;color:#e4b594}button:disabled{opacity:.5;cursor:wait}.camera-panel .note{font-size:11px;color:#bda590}.camera-panel [hidden]{display:none}@media(max-width:600px){.camera-panel{top:130px;right:16px;width:230px;max-height:55vh;overflow:auto}}
-</style>
-<style>
-/* Folded red paper, kept outside the WebGL scene so the stage stays unchanged. */
-.curtain-waiting header,.curtain-waiting #status,.curtain-waiting .help,.curtain-waiting .controls,.curtain-waiting .camera-panel{visibility:hidden;pointer-events:none}
-.curtains{position:fixed;inset:0;z-index:5;overflow:hidden;pointer-events:none}
-.curtain{
- position:absolute;top:0;bottom:0;width:calc(50% + 1px);
- background-color:#56372d;
- background-image:
-  linear-gradient(180deg,#15030bcc,transparent 23%,#22041025 64%,#100208aa),
-  radial-gradient(ellipse at 50% 34%,#c6354d48,transparent 72%),
-  repeating-linear-gradient(90deg,#211c1b 0,#342722 9%,#56372d 22%,#8b503a 36%,#a4664e 43%,#694235 54%,#42352f 70%,#2d2422 84%,#211c1b 100%);
- background-size:100% 100%,100% 100%,clamp(72px,10vw,160px) 100%;
- box-shadow:0 0 30px #100306aa;
- transition:transform 2.6s cubic-bezier(.65,0,.25,1);
- pointer-events:auto
-}
-.curtain::after{content:"";position:absolute;inset:0;opacity:.16;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.48 .73' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23fff' filter='url(%23grain)' d='M0 0h180v180H0z'/%3E%3C/svg%3E");mix-blend-mode:soft-light}
-.curtain-left{left:0;border-right:1px solid #b3466070}
-.curtain-right{right:0;border-left:1px solid #b3466070;background-position:right top}
-.curtain-opening .curtain-left{transform:translateX(calc(-100% + clamp(14px,2.4vw,30px)))}
-.curtain-opening .curtain-right{transform:translateX(calc(100% - clamp(14px,2.4vw,30px)))}
-html:not(.curtain-waiting) .curtain{pointer-events:none}
-.error{z-index:6}
-#stage-light{position:fixed;inset:0;pointer-events:none;opacity:0;background:radial-gradient(ellipse at 50% 52%,#ffc17b35,transparent 59%);transition:opacity 2.6s ease}
-.curtain-opening #stage-light{opacity:1}
-#start-show{position:fixed;z-index:6;top:50%;left:50%;transform:translate(-50%,-50%);padding:15px 28px;font-size:16px;background:#342722;border-color:#e0a886}
-#round-hud{position:fixed;z-index:4;top:24px;left:50%;transform:translateX(-50%);display:flex;gap:14px;align-items:center;padding:8px 16px;border:1px solid #725144;background:#342722;color:#ffd395;pointer-events:none;white-space:nowrap}
-#round-time{font-variant-numeric:tabular-nums;color:#f4e6ce}
-.curtain-waiting #round-hud{visibility:hidden}
-.round-over #round-hud{top:50%;transform:translate(-50%,-50%);padding:22px 34px;font-size:clamp(28px,6vw,60px);box-shadow:0 8px 40px #12060db3}
-.round-over header,.round-over #status,.round-over .help,.round-over .controls,.round-over .camera-panel,.round-over .landing-scrap{display:none}
-.finale-flow{display:none;position:absolute;inset:0;overflow:hidden}
-.finale .finale-flow{display:block}
-.finale-flow i{
- position:absolute;top:-3vh;left:var(--x);width:var(--w);height:var(--h);
- border-radius:38% 52% 62% 44% / 2% 2% 8% 11%;
- background:linear-gradient(96deg,#240006cc,#620012 22%,#a4192b 39%,#67000d 52%,#300007ee 91%);
- box-shadow:inset 0 -4px 8px #170003aa;
- transform-origin:top;animation:finale-drip var(--duration) var(--delay) cubic-bezier(.35,.12,.62,1) both;
-}
-.finale .curtains::after{
- content:"";position:absolute;inset:0;background:#080103;
- animation:finale-darken 3.8s .25s ease-in-out both;
-}
-.finale #round-hud{z-index:6;animation:finale-score .65s 4s both}
-@keyframes finale-drip{from{transform:scaleY(0)}to{transform:scaleY(1)}}
-@keyframes finale-darken{from{opacity:0}to{opacity:.84}}
-@keyframes finale-score{from{opacity:0}to{opacity:1}}
-@media(prefers-reduced-motion:reduce){
- .finale-flow i,.finale #round-hud{animation:none}
- .finale .curtains::after{animation:none;opacity:.84}
-}
-@media(max-width:600px){html:not(.round-over) #round-hud{top:94px}}
-@media(prefers-reduced-motion:reduce){.curtain{transition-duration:.01s}}
-</style>
-<style>
-/* Paper theatre UI: warm ticket stock, burgundy ink, and stitched borders. */
-:root{--paper:#f1dfbb;--ink:#382b24;--wine:#714233;--edge:#c6a36d;--panel:#292b2e;--muted:#dcc7ae}
-body{font-family:"Malgun Gothic",sans-serif}
-header{top:24px;left:48px;padding:18px 24px 20px;background:var(--paper);color:var(--ink);border:1px solid var(--edge);box-shadow:5px 5px 0 #38151cd9;max-width:320px}
-header::after{content:"";position:absolute;inset:7px;border:1px dashed #9f735d;pointer-events:none}
-header small{font-size:10px;letter-spacing:3px;color:#704132}
-h1{font-family:Georgia,"Batang",serif;font-weight:700;font-size:28px;letter-spacing:1px;margin:10px 0}
-header p{font-size:14px;color:#704132;line-height:1.5}
-button{min-height:44px;min-width:44px;padding:11px 18px;border:1px solid var(--edge);border-radius:2px;background:var(--wine);color:var(--paper);font-size:16px;line-height:1.4;box-shadow:inset 0 0 0 3px #45352e;transition:background .15s}
-button:hover:not(:disabled){background:#925440}
-button:disabled{cursor:not-allowed;opacity:.55}
-button:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid #f8dda3;outline-offset:3px}
-#status{top:174px;left:48px;right:auto;max-width:320px;padding:9px 13px;background:var(--panel);border-left:2px solid var(--edge);color:var(--muted);font-size:12px;line-height:1.6;letter-spacing:0;pointer-events:none}
-.camera-panel{top:24px;right:48px;width:300px;padding:0;background:var(--panel);border:1px solid var(--edge);border-radius:2px;box-shadow:5px 5px 0 #08040680;font-size:16px;backdrop-filter:none;max-height:calc(100dvh - 130px);overflow:auto;scrollbar-color:var(--edge) var(--panel)}
-.camera-panel>summary{padding:16px 20px;color:var(--paper);font-family:Georgia,"Batang",serif;font-weight:700;font-size:18px;min-height:56px;line-height:1.4}
-.camera-panel[open]>summary{border-bottom:1px dashed var(--edge)}
-.panel-content{padding:4px 18px 18px}
-.camera-panel p{font-size:14px;color:var(--muted);line-height:1.7}
-.camera-panel .note{font-size:13px;color:var(--muted)}
-.camera-panel #camera-status,.camera-panel #hand-status{border-left:2px solid var(--edge);padding-left:10px}
-.camera-panel #face-status{font-size:13px;color:#e4c898}
-.camera-panel label{font-size:14px}
-.camera-panel input[type=range]{min-height:32px;accent-color:var(--paper)}
-.camera-tuning{border-top:1px dashed #84634e;margin-top:16px;padding-top:6px}
-.camera-tuning summary{min-height:44px;padding:12px 0;font-size:14px;color:var(--paper)}
-.privacy-note{border-top:1px solid #624333;padding-top:12px}
-.help{bottom:28px;left:48px;padding:12px 16px;background:var(--panel);border-left:2px solid var(--edge);color:var(--muted);font-size:14px;line-height:1.7}
-.help strong{display:block;color:var(--paper);font-weight:500}
-.controls{bottom:28px;right:48px;gap:8px;padding:8px;background:var(--panel);border:1px solid var(--edge)}
-#round-hud{top:24px;gap:0;padding:0;border:1px solid var(--edge);background:var(--paper);color:var(--ink);box-shadow:4px 4px 0 #38151cd9;font-size:18px;font-weight:700}
-#throw-score{padding:14px 22px}
-#round-time{padding:14px 22px;border-left:1px dashed #987257;color:var(--ink)}
-.round-over #round-hud{padding:14px;max-width:calc(100vw - 48px);white-space:normal;text-align:center;font-family:Georgia,"Batang",serif;border:4px double var(--ink);outline:5px solid var(--paper)}
-#start-show{width:min(330px,calc(100vw - 64px));padding:28px 32px;background:var(--paper);color:var(--ink);border:5px double var(--ink);outline:1px solid var(--edge);outline-offset:5px;box-shadow:0 16px 60px #10020888;font-family:Georgia,"Batang",serif;font-weight:700;font-size:24px;letter-spacing:2px}
-#start-show::before{content:"PAPER LABYRINTH";display:block;font:10px/1.8 Arial,sans-serif;letter-spacing:4px;margin-bottom:16px;color:#704132}
-#start-show::after{content:"붉은 종이 극장에 오신 것을 환영합니다";display:block;font:13px/1.6 "Malgun Gothic",sans-serif;letter-spacing:0;margin-top:16px;color:#704132}
-#start-show:hover:not(:disabled){background:#fff0d1}
-.error{border:1px solid var(--edge);background:var(--panel);color:var(--paper)}
-@media(max-width:1100px){
- header{left:28px;top:20px;padding:14px 20px;max-width:260px}h1{font-size:24px}header p{font-size:13px}
- #status{left:28px;top:154px;max-width:260px;font-size:11px}
- .camera-panel{right:28px;top:20px;width:270px}
- #round-hud{top:20px;font-size:16px}#throw-score,#round-time{padding:12px 14px}
- .help{left:28px;font-size:13px}.controls{right:28px}
-}
-@media(max-width:760px){
- header{top:14px;left:20px;max-width:calc(100vw - 40px);padding:12px 18px}h1{font-size:22px;margin:5px 0}header small{font-size:9px}header p{display:none}
- #status{display:none}
- html:not(.round-over) #round-hud{top:110px;left:20px;transform:none;font-size:14px}
- #throw-score,#round-time{padding:12px}
- .camera-panel{top:110px;right:20px;width:min(300px,calc(100vw - 40px));max-height:calc(100dvh - 200px);z-index:4}
- .camera-panel:not([open]){width:auto;max-width:calc(100vw - 210px)}
- .camera-panel>summary{padding:12px;font-size:15px;min-height:46px}
- .help{bottom:94px;left:20px;right:20px;padding:9px 12px;font-size:12px;text-align:center}
- .controls{bottom:18px;right:auto;left:50%;transform:translateX(-50%);white-space:nowrap}
-}
-@media(max-height:540px){
- header{top:12px;padding:10px 16px}header p,#status,.help{display:none}
- .camera-panel{top:12px;max-height:calc(100dvh - 90px)}
- html:not(.round-over) #round-hud{top:12px}
- .controls{bottom:12px}
-}
-@media(prefers-reduced-motion:reduce){button{transition:none}}
-</style>
-<canvas id="scene" inert tabindex="0" aria-label="붉은 계단과 종이 인물이 있는 3D 미로. 드래그 또는 방향키로 회전하고 마우스 휠로 확대합니다."></canvas>
-<div id="stage-light" aria-hidden="true"></div>
-<div class="curtains" aria-hidden="true"><div class="finale-flow"><i style="--x:-4%;--w:12%;--h:54vh;--delay:90ms;--duration:1698ms"></i><i style="--x:5%;--w:8%;--h:73vh;--delay:20ms;--duration:1926ms"></i><i style="--x:16%;--w:11%;--h:40vh;--delay:220ms;--duration:1530ms"></i><i style="--x:25%;--w:6%;--h:59vh;--delay:360ms;--duration:1758ms"></i><i style="--x:33%;--w:12%;--h:85vh;--delay:140ms;--duration:2070ms"></i><i style="--x:43%;--w:10%;--h:51vh;--delay:40ms;--duration:1662ms"></i><i style="--x:51%;--w:11%;--h:67vh;--delay:240ms;--duration:1854ms"></i><i style="--x:59%;--w:9%;--h:38vh;--delay:440ms;--duration:1506ms"></i><i style="--x:69%;--w:12%;--h:94vh;--delay:110ms;--duration:2178ms"></i><i style="--x:79%;--w:11%;--h:60vh;--delay:310ms;--duration:1770ms"></i><i style="--x:88%;--w:10%;--h:76vh;--delay:190ms;--duration:1962ms"></i><i style="--x:96%;--w:9%;--h:48vh;--delay:70ms;--duration:1626ms"></i></div><div class="curtain curtain-left"></div><div class="curtain curtain-right"></div></div>
-<button id="start-show" disabled>시작하기</button>
-<output id="eat-mode" hidden aria-live="off"></output>
-<output id="combo-count" hidden aria-live="polite"></output>
-<div id="round-hud"><output id="throw-score" aria-live="polite">점수 0</output><span id="round-time" role="timer">60초</span></div>
-<header><small>PAPER LABYRINTH / 02</small><h1>붉은 종이 미로</h1><p>손끝으로 여는 작은 종이 극장</p></header>
-<div id="status" role="status">공간을 준비하고 있어요</div>
-<details class="camera-panel"><summary>참여 · 설정</summary>
-<div class="panel-content">
-<button id="camera-on">카메라 켜기</button><button id="camera-off" hidden>카메라 끄기</button>
-<p id="camera-status" role="status">중앙 캐릭터가 나를 대신해요. 아래 확인창에서 내 모습과 손·입 인식 상태를 볼 수 있어요.</p>
-<button id="hand-on" disabled>캐릭터 움직이기</button><button id="hand-off" hidden>움직임 연결 끄기</button>
-<p id="hand-status" role="status">카메라를 켠 뒤 ‘캐릭터 움직이기’를 눌러 주세요.</p>
-<p id="face-status" role="status">입 인식 대기 중</p>
-<p class="note">입을 한 번 크게 벌리면 2초간 먹기 모드! 엄지와 검지를 붙인 채 좌우로 훑으면 노랗게 빛나는 친구를 연속으로 잡아요. 4초 안에 이어 먹으면 콤보, 3콤보부터 2점!</p>
-<details class="camera-tuning" hidden><summary>카메라 배경 조절</summary>
-<label for="chroma-strength">초록 배경 제거 강도</label>
-<input id="chroma-strength" type="range" min="0" max="100" value="60">
-<p class="note">초록색 천에 빛이 고르게 닿도록 해 주세요. 초록색 옷도 함께 지워질 수 있어요.</p>
-</details>
-<p class="note privacy-note">영상은 이 PC에서만 처리합니다.<br>녹화·외부 전송·마이크 사용 없음.</p>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>인형극장: 광대의 만찬</title><meta name="description" content="고풍스러운 책장을 열고, 손의 움직임으로 인형들과 함께하는 작은 공연. 인형극장: 광대의 만찬."><link rel="icon" href="data:,"><link rel="stylesheet" href="theatre-design.css"><link rel="stylesheet" href="theatre-game.css"></head>
+<body data-screen="entry" data-eating-mode="auto"><canvas id="scene" inert tabindex="0" aria-label="붉은 계단과 종이 인물이 있는 3D 미로. 드래그 또는 방향키로 회전하고 마우스 휠로 확대합니다."></canvas>
+<div class="opening-curtain" aria-hidden="true" inert>
+ <div class="opening-curtain-panel opening-curtain-left"></div>
+ <div class="opening-curtain-panel opening-curtain-right"></div>
+ <div class="opening-curtain-valance"></div>
 </div>
-</details>
-<div class="help"><strong>드래그해서 무대를 둘러보세요</strong>휠 · 확대 / 축소 &nbsp; | &nbsp; 방향키 · 회전</div>
-<section id="tracking-monitor" aria-label="내 모습과 손·입 확인창">
+<div id="antique-theatre-suite" aria-label="인형극장: 광대의 만찬">
+  <main id="screens">
+    <section id="screen-entry" class="screen" data-screen="entry" aria-label="극장의 초대장">
+      <div class="ab-theatre as-invitation">
+        <header class="ab-masthead"><span class="ab-brand"><span class="ab-lily" aria-hidden="true">⚜</span><span>The Jester’s Banquet<small>인형극장: 광대의 만찬</small></span></span><div class="stage-header-actions"><span class="ab-header-note">오래된 극장으로부터 온 초대</span><button type="button" class="sound-toggle" aria-pressed="false" aria-label="오르골과 효과음 켜기">소리 켜기</button></div></header>
+        <div class="ab-desk">
+          <div class="ab-cover"><div class="ab-cover-corner ab-cover-tl" aria-hidden="true"></div><div class="ab-cover-corner ab-cover-br" aria-hidden="true"></div>
+            <div class="ab-book">
+              <section class="ab-page ab-left as-invitation-page"><span class="ab-running-title">THE INVITATION <span>·</span> PROLOGUE</span><div class="ab-title-ornament" aria-hidden="true">❦</div><h1 aria-label="인형극장: 광대의 만찬">인형극장</h1><p class="ab-english-title">광대의 만찬</p><div class="ab-title-rule" aria-hidden="true"><span>◆</span></div><p class="ab-introduction"><span class="ab-initial">오</span>래된 책장이 열리면,<br>잠들어 있던 인형들이 깨어납니다.<br>당신의 손끝으로 이야기를 이어 주세요.</p><div class="as-entry-actions"><button type="button" class="as-button as-primary" id="start-show" disabled>카메라로 시작하기 <span aria-hidden="true">⟶</span></button><button type="button" class="as-text-button" id="explore-show" disabled>카메라 없이 먼저 둘러보기</button></div><div class="ab-left-bottom"><p class="ab-margin-note">손끝으로 펼치는<br>한 편의 작은 공연</p><span class="ab-wax" aria-hidden="true"><span>P</span><small>THEATRE</small></span></div><div class="ab-page-footer"><span>이야기의 시작</span><span class="ab-page-number">Ⅰ</span><span>초대받은 당신에게</span></div></section>
+              <div class="ab-spine" aria-hidden="true"></div>
+              <section class="ab-page ab-right as-frontispiece"><div class="ab-ribbon" aria-hidden="true"><span>Ⅰ</span></div><span class="ab-running-title">THE JESTER AWAITS</span><div class="as-full-portrait"><span class="as-portrait-crown" aria-hidden="true">❦</span><div class="as-stage-picture" role="img" aria-label="붉은 계단과 금빛 종이 장식 속 광대 인형"></div></div><p class="as-picture-caption">Fig. I <span>—</span> 인형극장의 주인</p><h2 class="as-character-caption">조금 기묘한 친구가<br>당신을 기다립니다.</h2><div class="ab-page-footer"><span>극장의 초상</span><span class="ab-page-number">Ⅱ</span><span>The Little Jester</span></div></section>
+            </div>
+          </div>
+        </div>
+        <footer class="ab-theatre-footer"><span>❧ 손끝으로 이어 쓰는 작은 이야기</span><span>서막 <i aria-hidden="true">·</i> 극장의 초대장</span></footer>
+      </div>
+    </section>
+    <section id="screen-prepare" class="screen" data-screen="prepare" aria-label="카메라 준비" hidden>
+      <div class="ab-theatre as-preparation">
+        <header class="ab-masthead"><span class="ab-brand"><span class="ab-lily" aria-hidden="true">⚜</span><span>The Jester’s Banquet<small>인형극장: 광대의 만찬</small></span></span><div class="stage-header-actions"><span class="ab-header-note">무대에 오르기 전에</span><button type="button" class="sound-toggle" aria-pressed="false" aria-label="오르골과 효과음 켜기">소리 켜기</button></div></header>
+        <div class="ab-desk"><div class="ab-cover"><div class="ab-cover-corner ab-cover-tl" aria-hidden="true"></div><div class="ab-cover-corner ab-cover-br" aria-hidden="true"></div><div class="ab-book">
+          <section class="ab-page ab-left as-mirror-page"><span class="ab-running-title">SPECULUM <span>·</span> THE LOOKING GLASS</span><div class="as-mirror"><span class="as-mirror-crown" aria-hidden="true">❦</span><div id="prepare-monitor-slot" class="as-mirror-glass">
+<section id="tracking-monitor" aria-label="내 모습과 손 확인창">
  <div class="monitor-heading"><strong>나의 움직임</strong><span id="monitor-state" role="status">카메라 꺼짐</span></div>
- <div class="monitor-body">
-  <div class="monitor-video"><video id="camera-preview" muted autoplay playsinline aria-label="거울처럼 보이는 내 카메라 영상"></video><canvas id="tracking-overlay" width="320" height="180" aria-hidden="true"></canvas><span id="preview-empty">내 모습이 여기에 보여요</span></div>
-  <div class="monitor-signals">
-   <div id="signal-left" class="signal"><span>화면 왼손</span><strong>대기</strong></div>
-   <div id="signal-right" class="signal"><span>화면 오른손</span><strong>대기</strong></div>
-   <div id="signal-mouth" class="signal"><span>입</span><strong>대기</strong></div>
-   <meter id="mouth-meter" min="0" max=".6" value="0" aria-label="입 벌린 정도"></meter>
+ <div class="monitor-video"><video id="camera-preview" muted autoplay playsinline aria-label="거울처럼 보이는 내 카메라 영상"></video><canvas id="tracking-overlay" width="320" height="180" aria-hidden="true"></canvas><span id="preview-empty">당신의 모습이 비칠 자리</span></div>
+ <div class="monitor-signals"><div id="signal-left" class="signal"><span>화면 왼손</span><strong>대기</strong></div><div id="signal-right" class="signal"><span>화면 오른손</span><strong>대기</strong></div><div id="signal-mouth" class="signal"><span>입</span><strong>대기</strong></div></div>
+ <meter id="mouth-meter" min="0" max=".6" value="0" aria-label="입 벌린 정도"></meter>
+ <button id="monitor-start" hidden>카메라 켜기</button><button id="monitor-stop" class="as-text-button" hidden>카메라 끄기</button><p id="monitor-hint">손 전체를 보여 주세요.</p>
+</section></div></div><p class="as-picture-caption">Fig. II <span>—</span> 움직임을 비추는 거울</p><p id="prepare-pose-note" class="as-mirror-note">손 전체가 거울 안에 보이도록 해 주세요.</p><div class="ab-page-footer"><span>나의 움직임</span><span class="ab-page-number">Ⅲ</span><span>마법 거울</span></div></section>
+          <div class="ab-spine" aria-hidden="true"></div>
+          <section class="ab-page ab-right as-preparation-copy"><div class="ab-ribbon" aria-hidden="true"><span>Ⅱ</span></div><span class="ab-running-title">BEFORE THE PERFORMANCE</span><div class="ab-title-ornament" aria-hidden="true">❦</div><h1>거울 앞에<br>서 주세요.</h1><p class="ab-english-title">A Reflection of Your Gesture</p><div class="ab-title-rule" aria-hidden="true"><span>◆</span></div><ol class="as-directions"><li><span>I</span><div><strong>카메라를 켜 주세요.</strong><p>Chrome의 권한 창에서<br>‘허용’을 눌러 주세요.</p></div></li><li><span>II</span><div><strong id="prepare-pose-title">손을 보여 주세요.</strong><p>준비되면 자동으로<br>짧은 안내로 넘어갑니다.</p></div></li></ol><button type="button" class="as-button as-primary" id="camera-on">카메라 켜기 <span aria-hidden="true">⟶</span></button><button type="button" class="as-text-button" id="prepare-explore">카메라 없이 둘러보기</button><button id="camera-off" class="as-text-button" hidden>카메라 끄기</button>
+<label class="eating-mode-label" for="camera-choice">사용할 카메라<select id="camera-choice" class="camera-device-choice"><option value="">자동 · 연결 가능한 카메라 찾기</option></select></label>
+<p id="camera-problem" class="connection-status camera-problem" role="alert" hidden></p>
+<label class="eating-mode-label">놀이 방법<select class="eating-mode-choice"><option value="auto" selected>손으로 잡으면 먹기 · 쉬움</option><option value="mouth">입 벌리고 손으로 잡기</option></select></label>
+<button id="hand-on" class="as-button as-primary" disabled hidden>움직임 다시 연결하기 ⟶</button>
+<p id="camera-status" class="connection-status" role="status">카메라를 켜면 내 모습이 거울에 보여요.</p>
+<p id="hand-status" class="connection-status" role="status"></p>
+<p class="as-privacy">영상은 이 PC 안에서만 처리합니다.<br>녹화 · 외부 전송 · 마이크 사용 없음</p><div class="ab-page-footer"><span>준비의 기록</span><span class="ab-page-number">Ⅳ</span><span>곧 시작해요</span></div></section>
+        </div></div></div>
+        <footer class="ab-theatre-footer"><span>❧ 당신의 몸짓이 인형의 몸짓으로</span><span>첫째 장 <i aria-hidden="true">·</i> 마법 거울</span></footer>
+      </div>
+    </section>
+    <section id="screen-practice" class="screen" data-screen="practice" aria-label="간단한 조작 안내" hidden>
+<div class="ab-theatre">
+    <header class="ab-masthead"><span class="ab-brand"><span class="ab-lily" aria-hidden="true">⚜</span><span>The Jester’s Banquet<small>인형극장: 광대의 만찬</small></span></span><div class="stage-header-actions"><button id="practice-back" class="as-dark-button">거울로 돌아가기</button><button type="button" class="sound-toggle" aria-pressed="false" aria-label="오르골과 효과음 켜기">소리 켜기</button></div></header>
+    <div class="ab-desk">
+      <div class="ab-cover" aria-label="펼쳐진 몸짓의 서">
+        <div class="ab-cover-corner ab-cover-tl" aria-hidden="true"></div><div class="ab-cover-corner ab-cover-br" aria-hidden="true"></div>
+        <div class="ab-book">
+          <section class="ab-page ab-left" aria-labelledby="ab-book-title">
+            <span class="ab-running-title">LIBER GESTUUM <span>·</span> VOLUMEN I</span>
+            <div class="ab-title-ornament" aria-hidden="true">❦</div>
+            <h1 id="ab-book-title">몸짓의 서</h1>
+            <p class="ab-english-title">The Book of Gestures</p>
+            <div class="ab-title-rule" aria-hidden="true"><span>◆</span></div>
+            <label class="eating-mode-label">놀이 방법<select class="eating-mode-choice"><option value="auto" selected>손으로 잡으면 먹기 · 쉬움</option><option value="mouth">입 벌리고 손으로 잡기</option></select></label><p class="ab-introduction" id="lesson-summary">손으로 잡기만 하면 자동으로 먹어요. 입은 벌리지 않아도 돼요.</p>
+            <ol class="ab-chapters" aria-label="두 가지 조작법">
+              <li class="ab-current"><span class="ab-numeral" aria-hidden="true">I</span><div><h2 id="gesture-one-title">친구 위로 손끝 옮기기</h2><p id="gesture-one-note">화면에 손 전체를 보여 주세요.</p></div><span class="ab-step-ornament" aria-hidden="true">❧</span></li>
+              <li><span class="ab-numeral" aria-hidden="true">II</span><div><h2 id="gesture-two-title">엄지와 검지를 붙이기</h2><p id="gesture-two-note">잡으면 바로 먹어요. 붙인 채 다음 친구로!</p></div></li>
+            </ol>
+            <div class="ab-left-bottom"><p class="ab-margin-note">연습 없이 바로 시작해도 좋아요.<br>놀이 중에도 조작법을 볼 수 있어요.</p><div class="ab-flourish" aria-hidden="true">❧</div></div>
+            <div class="ab-page-footer"><span>인형극장: 광대의 만찬</span><span class="ab-page-number">Ⅴ</span><span>몸짓의 기록</span></div>
+          </section>
+          <div class="ab-spine" aria-hidden="true"></div>
+          <section class="ab-page ab-right" aria-labelledby="ab-gesture-title">
+            <div class="ab-ribbon" aria-hidden="true"><span>Ⅰ</span></div>
+            <span class="ab-running-title">CHAPTER THE FIRST</span>
+            <div class="ab-portrait-block"><span class="ab-portrait-side ab-side-left" aria-hidden="true">THE LITTLE</span><div class="ab-portrait-frame"><div class="ab-portrait" role="img" aria-label="입을 크게 벌린 종이 광대 인형"></div><span class="ab-portrait-crest" aria-hidden="true">❦</span></div><span class="ab-portrait-side ab-side-right" aria-hidden="true">MARIONETTE</span></div>
+            <p class="ab-figure-label">Fig. I <span>—</span> 깨어나는 인형</p>
+            <h2 id="ab-gesture-title">준비됐나요?</h2>
+            <p class="ab-instruction" id="lesson-instruction">친구 위에서 엄지와 검지를 붙여요.<br>입을 벌리지 않아도 자동으로 먹어요.</p>
+            <div class="ab-waiting"><span class="ab-waiting-diamond" aria-hidden="true">◇</span><span id="lesson-feedback" role="status">따라 하지 않아도 바로 시작할 수 있어요.</span></div>
+            <div class="ab-next-row"><button id="lesson-next" class="ab-next" type="button" disabled>바로 공연 시작 <span aria-hidden="true">⟶</span></button><span class="ab-wax" aria-hidden="true"><span>P</span><small>THEATRE</small></span></div>
+            <div class="ab-page-footer"><span>조작 안내</span><span class="ab-page-number">Ⅵ</span><span>이제 무대로</span></div>
+          </section>
+        </div>
+      </div>
+    </div>
+    <footer class="ab-theatre-footer"><span>❧ 손끝으로 이어 쓰는 작은 이야기</span><span>두 가지 몸짓 <i aria-hidden="true">·</i> 바로 시작</span></footer>
   </div>
- </div>
- <div class="monitor-actions"><button id="monitor-start">카메라 켜기</button><button id="monitor-stop" hidden>카메라 끄기</button></div>
- <p id="monitor-hint">카메라를 켜고 손과 입을 확인해 보세요.</p>
-</section>
-<style>
-#tracking-monitor{position:fixed;z-index:4;bottom:22px;left:48px;width:344px;padding:12px;background:#292b2ef5;border:1px solid var(--edge);box-shadow:4px 4px 0 #08040680;color:var(--paper)}
-.monitor-heading{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:14px;margin-bottom:9px}.monitor-heading span{font-size:12px;color:#dcc7ae}
-.monitor-body{display:flex;gap:10px;align-items:center}.monitor-video{position:relative;width:190px;aspect-ratio:16/9;background:#100b0c;overflow:hidden;border:1px solid #80604d;flex-shrink:0}
-#camera-preview{width:100%;height:100%;object-fit:contain;transform:scaleX(-1);display:block}
-#tracking-overlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;cursor:default}
-#preview-empty{position:absolute;inset:0;display:grid;place-items:center;font-size:11px;color:#dcc7ae}#preview-empty[hidden]{display:none}
-.monitor-signals{flex:1;min-width:0}.signal{padding:3px 0 5px;display:flex;flex-direction:column;gap:2px}.signal span{font-size:11px;color:#dcc7ae}.signal strong{font-size:13px;color:#c9ae9d}.signal[data-state=seen] strong{color:#a5eed3}.signal[data-state=active] strong{color:#ffe197}
-#mouth-meter{width:100%;height:10px;accent-color:#a5eed3;display:block}.monitor-actions{display:flex;gap:8px;margin-top:10px}.monitor-actions button{font-size:13px;padding:8px 10px;min-height:38px;flex:1}.monitor-actions [hidden]{display:none}
-#monitor-hint{font-size:12px;line-height:1.5;color:#dcc7ae;margin:8px 0 0}.help{display:none}
-.curtain-waiting #tracking-monitor,.round-over #tracking-monitor{display:none}
-@media(max-width:1100px){#tracking-monitor{left:28px;bottom:22px}}
-@media(max-width:760px){#tracking-monitor{left:20px;bottom:86px;width:calc(100vw - 40px);max-width:344px;padding:10px}.monitor-video{width:55%}.signal{padding:1px 0}.monitor-heading{margin-bottom:6px}.monitor-actions{margin-top:6px}#monitor-hint{margin-top:5px;font-size:11px}}
-@media(max-height:540px){#tracking-monitor{bottom:12px;width:300px;padding:8px}.monitor-video{width:150px}#monitor-hint{display:none}.monitor-heading{margin-bottom:4px}.monitor-actions{margin-top:4px}}
-</style>
-<div class="controls" role="group" aria-label="무대 시점 조절"><button id="out" aria-label="축소">−</button><button id="in" aria-label="확대">＋</button><button id="home">처음 시점</button></div>
-<div id="error" class="error" role="alert"></div>
-<div id="mouth-cursor" hidden aria-hidden="true"></div>
-<div id="hand-cursor" hidden aria-hidden="true"></div><div id="grab-target" hidden aria-hidden="true"></div>
-<style>
-#eat-mode{position:fixed;z-index:4;left:50%;top:135px;transform:translateX(-50%);padding:8px 14px;background:#2c1b20e8;color:#ffe8bd;border:1px solid #c19b67;font-size:14px;pointer-events:none;text-align:center}#eat-mode[data-active=true]{background:#174336ee;color:#d9ffe5;border-color:#a9efbf}.curtain-waiting #eat-mode,.round-over #eat-mode{display:none}
-#combo-count{position:fixed;z-index:4;top:100px;left:50%;transform:translateX(-50%);font-size:24px;font-weight:bold;color:#ffdd88;text-shadow:0 2px 5px #23010b;pointer-events:none}.eat-points{position:fixed;z-index:4;font-size:30px;font-weight:bold;color:#ffe49c;text-shadow:0 2px 5px #23010b;pointer-events:none}.curtain-waiting #combo-count,.round-over #combo-count,.round-over .eat-points{display:none}
-#mouth-cursor{position:absolute;pointer-events:none;z-index:3;border:1px dashed #efd08177;border-radius:50%;transform:translate(-50%,-50%)}#mouth-cursor.open{border:2px solid #91e3c1;background:#70d9b918}#mouth-cursor[hidden]{display:none}
-#hand-cursor,#grab-target{position:absolute;pointer-events:none;border-radius:50%;transform:translate(-50%,-50%);z-index:3}#hand-cursor{width:24px;height:24px;border:2px solid #f5e7cb;background:#c79b6133}#hand-cursor.ready{border-color:#91e3c1;background:#70d9b955}#hand-cursor.holding{background:#f6d27caa;border-color:#ffe9a5;width:18px;height:18px}#grab-target{width:100px;height:100px;border:3px solid #ffe49a;box-shadow:0 0 24px #ffdc6b99,inset 0 0 15px #ffe7ac44}#grab-target::after{content:attr(data-label);position:absolute;top:-27px;left:50%;transform:translateX(-50%);background:#3e2415;color:#ffe9a8;padding:3px 8px;font-size:12px;white-space:nowrap;border-radius:4px}#grab-target[hidden],#hand-cursor[hidden]{display:none}
-</style>
-<button id="reset-show" type="button" aria-keyshortcuts="R" style="position:fixed;right:16px;bottom:16px;z-index:10">리셋 (R)</button>
-<script>
- const resetShow=()=>window.location.reload();
- document.querySelector('#reset-show').addEventListener('click',resetShow);
- window.addEventListener('keydown',event=>{
-  if(event.code!=='KeyR'||event.repeat||event.ctrlKey||event.altKey||event.metaKey)return;
-  event.preventDefault();
-  resetShow();
- });
-</script>
+    </section>
+    <section id="screen-play" class="screen" data-screen="play" aria-label="놀이 중" hidden>
+      <div class="ab-theatre as-game">
+        <div class="stage-shade" aria-hidden="true"></div>
+        <header class="ab-masthead"><span class="ab-brand"><span class="ab-lily" aria-hidden="true">⚜</span><span>The Jester’s Banquet<small>인형극장: 광대의 만찬</small></span></span><div class="stage-header-actions"><button type="button" class="as-dark-button" id="pause-show">잠깐 쉬기 Ⅱ</button><button type="button" class="sound-toggle" aria-pressed="false" aria-label="오르골과 효과음 켜기">소리 켜기</button></div></header>
+        <div class="as-stage-area">
+          <div id="round-hud" class="as-scoreboard"><span class="as-score-crown" aria-hidden="true">❦</span><div><small>얻은 점수</small><strong><output id="throw-score" aria-live="polite">0</output></strong></div><div><small>남은 시간</small><strong id="round-time" role="timer">01:00</strong></div><span class="as-score-foot" aria-hidden="true">THE PERFORMANCE</span></div>
+          <div id="combo-count" class="as-combo" hidden aria-live="polite"></div>
+          <div class="as-stage-bottom"><div id="game-monitor-slot" class="as-small-mirror"></div><div class="as-cue"><span aria-hidden="true">❧</span><h2 id="eat-mode">친구를 잡으면 자동으로 먹어요!</h2><p id="game-instruction">엄지와 검지를 붙인 채 좌우로 움직여요.</p></div><div class="as-stage-seal" aria-hidden="true"><span class="ab-wax"><span>P</span><small>THEATRE</small></span></div></div>
+        </div>
+        <footer class="ab-theatre-footer"><span>❧ 당신의 몸짓이 이야기가 되는 순간</span><div id="view-controls" class="view-controls" role="group" aria-label="무대 시점 조절"><button id="out" aria-label="축소">−</button><button id="in" aria-label="확대">＋</button><button id="home">처음 시점</button><button id="explore-prepare">함께 놀기</button></div><span id="play-caption">셋째 장 · 인형들의 무대</span></footer>
+      </div>
+    </section>
+    <section id="screen-result" class="screen" data-screen="result" aria-label="놀이 결과" hidden>
+      <div class="ab-theatre as-result">
+        <header class="ab-masthead"><span class="ab-brand"><span class="ab-lily" aria-hidden="true">⚜</span><span>The Jester’s Banquet<small>인형극장: 광대의 만찬</small></span></span><div class="stage-header-actions"><span class="ab-header-note">다음 이야기를 기다리며</span><button type="button" class="sound-toggle" aria-pressed="false" aria-label="오르골과 효과음 켜기">소리 켜기</button></div></header>
+        <div class="as-charter-desk"><div class="as-charter-cover"><section class="ab-page as-charter"><div class="ab-ribbon" aria-hidden="true"><span>Ⅴ</span></div><span class="ab-running-title">A CHRONICLE OF YOUR PERFORMANCE</span><div class="ab-title-ornament" aria-hidden="true">❦</div><h1>공연의 기록</h1><p class="ab-english-title">A Tale Worth Remembering</p><div class="ab-title-rule" aria-hidden="true"><span>◆</span></div><p id="result-message" class="as-result-message">당신의 손끝으로 완성한 이야기,<br>이곳에 소중히 남깁니다.</p><div class="as-final-score"><span>이번 공연의 점수</span><strong><output id="result-score">0</output><small>점</small></strong><span>최고 연속 기록 <i>·</i> <output id="result-combo">0</output>콤보</span></div><button type="button" class="as-button as-primary" id="retry-show">다시 막을 올리기 <span aria-hidden="true">⟶</span></button><button type="button" class="as-text-button" id="result-explore">극장에 머무르기</button><div class="as-charter-signature"><span>The Jester’s Banquet<small>인형극장: 광대의 만찬</small></span><span class="ab-wax" aria-hidden="true"><span>P</span><small>THEATRE</small></span></div><div class="ab-page-footer"><span>공연을 마치며</span><span class="ab-page-number">Ⅷ</span><span>당신의 공연</span></div></section></div></div>
+        <footer class="ab-theatre-footer"><span>❧ Until the next chapter</span><span>마지막 장 <i aria-hidden="true">·</i> 공연의 기록</span></footer>
+      </div>
+    </section>
+</main>
+</div>
+
+<div id="status" class="load-status" role="status">극장을 준비하고 있어요…</div>
+<div id="error" role="alert"></div>
+<div id="hand-cursor" hidden aria-hidden="true"></div><div id="grab-target" hidden aria-hidden="true"></div><div id="mouth-cursor" hidden aria-hidden="true"></div>
+<div hidden><input id="chroma-strength" type="range" min="0" max="100" value="60"><button id="hand-off">움직임 연결 끄기</button><p id="face-status"></p></div>
+<dialog id="pause-dialog" aria-labelledby="pause-title"><div class="pause-paper"><span class="dialog-ornament" aria-hidden="true">❦</span><h2 id="pause-title">잠깐, 쉬어 갈까요?</h2><p id="pause-message">시간이 멈췄어요. 준비되면 다시 이어서 놀아요.</p><p id="pause-rules" class="pause-rules">친구 위에서 엄지와 검지를 붙이면 자동으로 먹어요.</p><button type="button" class="sound-toggle" aria-pressed="false" aria-label="오르골과 효과음 켜기">소리 켜기</button><button id="resume-show">계속 놀기</button><button id="finish-show">이번 공연 마치기</button></div></dialog>
+<noscript>이 게임을 이용하려면 Chrome에서 JavaScript를 허용해 주세요.</noscript>
 <script type="module" src="scene.js"></script>
-</html>
+</body></html>

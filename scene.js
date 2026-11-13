@@ -1,78 +1,33 @@
 'use strict';
 import {PinchGrab,nearestGrabTarget,EatCombo,EatingWindow,handSample,mouthSample,videoToWorld,projectPoint} from './hand-interaction.mjs';
 import {characterPlacement,characterMouthWorld,characterTargets,easeCharacterPose,comfortableHandSample,feedingMotion} from './character-avatar.mjs';
+import {createTheatreUI} from './theatre-ui.mjs';
+import {createTheatreAudio} from './theatre-audio.mjs';
+import {connectAvailableCamera,listCameras,waitForCameraPreview} from './camera-session.mjs';
 // Small native WebGL scene: no external packages or network assets.
 (() => {
 const canvas=document.querySelector('#scene'), status=document.querySelector('#status');
 const startShow=document.querySelector('#start-show');
-let audioContext,soundOutput,lastSoundEnd=0;
-startShow.onclick=()=>{
- startShow.hidden=true;
- try{
-  audioContext=new AudioContext();
-  soundOutput=audioContext.createGain();
-  soundOutput.gain.value=.18;
-  soundOutput.connect(audioContext.destination);
-  audioContext.resume().catch(()=>{});
- }catch(error){console.warn('Sound unavailable',error);}
- openCurtains();
-};
-function playStageSound(kind,strength=1){
- if(!soundOutput||audioContext.state!=='running')return;
- const now=audioContext.currentTime;
- if(now<lastSoundEnd&&(kind==='pop'||kind==='land'))return;
- const paper=kind==='paper',bell=kind==='bell',landing=kind==='land',chewing=kind==='bite';
- const duration=paper?2.35:bell?.48:chewing?.15:landing?.13:.095;
- const envelope=audioContext.createGain();
- let source;
- if(paper||chewing){
-  const buffer=audioContext.createBuffer(1,Math.ceil(audioContext.sampleRate*duration),audioContext.sampleRate);
-  const samples=buffer.getChannelData(0);
-  for(let i=0;i<samples.length;i++){
-   const t=i/audioContext.sampleRate;
-   samples[i]=(Math.random()*2-1)*(chewing?Math.exp(-t*22)*(.35+.65*Math.abs(Math.sin(t*210))):(.65+.22*Math.sin(t*49)+.12*Math.sin(t*113)));
-  }
-  source=audioContext.createBufferSource();
-  source.buffer=buffer;
-  const filter=audioContext.createBiquadFilter();
-  filter.type=chewing?'lowpass':'bandpass';
-  filter.frequency.setValueAtTime(chewing?2400:1100,now);
-  filter.frequency.linearRampToValueAtTime(chewing?320:680,now+duration);
-  source.connect(filter).connect(envelope);
- }else{
-  source=audioContext.createOscillator();
-  source.type=bell?'sine':'triangle';
-  source.frequency.setValueAtTime(bell?1046.5:landing?225+110*strength:460,now);
-  if(!bell)source.frequency.exponentialRampToValueAtTime(150,now+duration);
-  source.connect(envelope);
+let ui=null,autoEat=true;
+const stageAudio=createTheatreAudio(({started,muted,unavailable})=>{
+ for(const button of document.querySelectorAll('.sound-toggle')){
+  button.disabled=unavailable;
+  button.textContent=unavailable?'소리 사용 불가':!started?'소리 켜기':muted?'소리 꺼짐':'소리 켜짐';
+  button.setAttribute('aria-pressed',String(started&&!muted&&!unavailable));
+  button.setAttribute('aria-label',started&&!muted?'오르골과 효과음 끄기':'오르골과 효과음 켜기');
  }
- envelope.gain.setValueAtTime(.001,now);
- envelope.gain.linearRampToValueAtTime(paper?.15:bell?.22:chewing?.65:landing?.06+.13*strength:.17,now+(paper?.45:.008));
- if(landing&&strength>.5){
-  envelope.gain.exponentialRampToValueAtTime(.008,now+.048);
-  envelope.gain.linearRampToValueAtTime(.045*strength,now+.06);
- }
- envelope.gain.exponentialRampToValueAtTime(.001,now+duration);
- envelope.connect(soundOutput);
- source.start(now);
- source.stop(now+duration);
- lastSoundEnd=now+duration;
-}
-function openCurtains(){
- const root=document.documentElement,left=document.querySelector('.curtain-left');
- const finish=e=>{
-  if(e.propertyName!=='transform')return;
-  root.classList.remove('curtain-waiting');canvas.inert=false;
-  playStageSound('bell');
-  canvas.focus({preventScroll:true});
-  left.removeEventListener('transitionend',finish);left.removeEventListener('transitioncancel',finish);
- };
- left.addEventListener('transitionend',finish);left.addEventListener('transitioncancel',finish);
- // Let the textured stage paint behind the closed paper before revealing it.
- requestAnimationFrame(()=>requestAnimationFrame(()=>{
-  root.classList.add('curtain-opening');
-  if(!reducedMotion.matches)playStageSound('paper');
- }));
+});
+function enableSound(){stageAudio.enable();}
+function playStageSound(kind,strength=1){stageAudio.play(kind,strength);}
+for(const button of document.querySelectorAll('.sound-toggle'))button.addEventListener('click',()=>stageAudio.toggle());
+document.addEventListener('click',event=>{if(event.target.closest('button:not(.sound-toggle):not(:disabled)'))playStageSound('pop');});
+document.addEventListener('visibilitychange',()=>stageAudio.setHidden(document.hidden));
+window.addEventListener('pagehide',()=>stageAudio.setHidden(true));
+window.addEventListener('pageshow',()=>stageAudio.setHidden(document.hidden));
+function updateStartAvailability(){
+ const ready=!!character&&paperReady;
+ startShow.disabled=!ready;document.querySelector('#explore-show').disabled=!ready;
+ status.hidden=ready;
 }
 const fail=message=>document.querySelector('#error').textContent=message;
 const gl=canvas.getContext('webgl',{antialias:true,alpha:false});
@@ -479,7 +434,7 @@ const avatarPose=characterTargets();let avatarTarget=characterTargets();
 Promise.all([fetch('theatre-character.bin').then(r=>{if(!r.ok)throw Error('mesh');return r.arrayBuffer();}),fetch('theatre-character.json').then(r=>{if(!r.ok)throw Error('metadata');return r.json();})]).then(([data,meta])=>{
  const vertices=new Float32Array(data);
  if(vertices.length!==meta.vertices*11||!vertices.every(Number.isFinite))throw Error('invalid mesh');
- character={mesh:buffer(vertices),meta};startShow.disabled=!paperReady;render();
+ character={mesh:buffer(vertices),meta};updateStartAvailability();render();
 }).catch(error=>{console.error(error);fail('캐릭터 모델을 불러오지 못했어요. 새로고침해 주세요.');});
 function drawCharacter(){
  if(!character)return;
@@ -571,10 +526,10 @@ paper.onload=()=>{
  gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,atlas);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,paper);
  if((paper.width&(paper.width-1))===0&&(paper.height&(paper.height-1))===0){gl.generateMipmap(gl.TEXTURE_2D);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);}
  render();
- paperReady=true;startShow.disabled=!character;
+ paperReady=true;updateStartAvailability();
 };
 paper.onerror=()=>fail('종이 무늬를 불러오지 못했어요. 새로고침해 주세요.');paper.src='collage-paper.png';
-let imageReady=false,cameraStream=null,cameraRequest=0,lastVideoTime=-1,videoAspect=0,videoPlacement;
+let imageReady=false,cameraStream=null,cameraRequest=0,cameraStartup=null,lastVideoTime=-1,videoAspect=0,videoPlacement;
 const video=document.querySelector('#camera-preview');video.muted=true;video.autoplay=true;video.playsInline=true;
 const monitorStart=document.querySelector('#monitor-start'),monitorStop=document.querySelector('#monitor-stop'),monitorState=document.querySelector('#monitor-state'),monitorHint=document.querySelector('#monitor-hint');
 const trackingOverlay=document.querySelector('#tracking-overlay'),trackingCtx=trackingOverlay.getContext('2d');
@@ -602,13 +557,26 @@ function updateMonitor(hands=[],mouth=null){
   signal('#signal-mouth',sample.open?'열림 ✓':'닫힘 · 인식됨',sample.open?'active':'seen');mouthMeter.value=sample.ratio;
   const center=xy(sample),a=xy(mouth[2]),b=xy(mouth[3]);trackingCtx.strokeStyle=sample.open?'#ffe197':'#a5eed3';trackingCtx.lineWidth=2;
   trackingCtx.beginPath();trackingCtx.ellipse(...center,Math.max(5,Math.hypot(a[0]-b[0],a[1]-b[1])*.65),Math.max(4,sample.ratio*vw*.06),0,0,Math.PI*2);trackingCtx.stroke();
- }else if(handReady&&!faceReady)signal('#signal-mouth','준비 실패');
+ }else if(handReady&&!faceReady&&!autoEat)signal('#signal-mouth','준비 실패');
  monitorState.textContent=!cameraStream?'카메라 꺼짐':!handMode?'내 모습 확인 중':!handReady?'인식 준비 중…':'움직임 연결됨';
- monitorHint.textContent=!cameraStream?'카메라를 켜고 손과 입을 확인해 보세요.':!handMode?'내 모습이 보이면 ‘움직임 연결’을 눌러 주세요.':!handReady?'손과 얼굴 인식을 준비하고 있어요.':!hands?.length?'얼굴 양옆으로 손을 들어 주세요.':!sample?'얼굴 전체가 보이도록 앉아 주세요.':'작게 움직여도 넓게 따라와요 · 입을 벌려 노란 표시를 확인하세요.';
+ monitorHint.textContent=!cameraStream?'카메라를 켜고 손을 보여 주세요.':!handMode?'움직임을 연결하고 있어요. 실패하면 다시 연결해 주세요.':!handReady?(autoEat?'손 인식을 준비하고 있어요.':'손과 얼굴 인식을 준비하고 있어요.'):!hands?.length?'손 전체가 화면에 보이게 들어 주세요.':autoEat?'엄지와 검지를 붙여 친구를 잡으면 자동으로 먹어요.':!sample?'얼굴 전체가 보이도록 앉아 주세요.':'작게 움직여도 넓게 따라와요 · 입을 벌려 노란 표시를 확인하세요.';
  monitorStart.textContent=!cameraStream?'카메라 켜기':!handMode?'움직임 연결':'연결 중';
  monitorStart.disabled=handMode;monitorStop.hidden=!cameraStream;previewEmpty.hidden=!!cameraStream;
 }
 const cameraOn=document.querySelector('#camera-on'),cameraOff=document.querySelector('#camera-off'),cameraStatus=document.querySelector('#camera-status');
+const cameraChoice=document.querySelector('#camera-choice'),cameraProblem=document.querySelector('#camera-problem');
+let cameraListRequest=0;
+async function refreshCameraChoices(){
+ const request=++cameraListRequest,devices=await listCameras(navigator.mediaDevices);
+ if(request!==cameraListRequest)return;
+ const selected=cameraChoice.value;
+ cameraChoice.replaceChildren(new Option('자동 · 연결 가능한 카메라 찾기',''));
+ for(const [index,device] of devices.entries())if(device.deviceId)cameraChoice.add(new Option(device.label||'카메라 '+(index+1),device.deviceId));
+ if([...cameraChoice.options].some(option=>option.value===selected))cameraChoice.value=selected;
+}
+cameraChoice.addEventListener('change',()=>{stopCamera('카메라를 선택했어요. 카메라 켜기를 눌러 주세요.');});
+navigator.mediaDevices?.addEventListener?.('devicechange',refreshCameraChoices);
+refreshCameraChoices();
 const handOn=document.querySelector('#hand-on'),handOff=document.querySelector('#hand-off'),handStatus=document.querySelector('#hand-status');
 const handCursor=document.querySelector('#hand-cursor'),grabTarget=document.querySelector('#grab-target');
 const gesture=new PinchGrab();
@@ -630,26 +598,26 @@ const eatingWindow=new EatingWindow(),eatModeDisplay=document.querySelector('#ea
 const scoreDisplay=document.querySelector('#throw-score');
 const timeDisplay=document.querySelector('#round-time');
 const roundLength=60000;
-let roundDeadline=null,roundOver=false;
-let caughtCount=0;
+let roundDeadline=null,roundOver=false,roundPausedAt=null;
+let caughtCount=0,maxCombo=0;
 function updateRoundClock(now){
- comboDisplay.hidden=!combo.active(now)||roundOver;
- if(roundDeadline===null||roundOver)return;
+ comboDisplay.hidden=!combo.active(roundPausedAt??now)||roundOver||roundDeadline===null;
+ if(roundDeadline===null||roundOver||roundPausedAt!==null)return;
  const remaining=Math.max(0,Math.ceil((roundDeadline-now)/1000));
- const label=remaining+'초';
+ const label=String(Math.floor(remaining/60)).padStart(2,'0')+':'+String(remaining%60).padStart(2,'0');
  if(timeDisplay.textContent!==label)timeDisplay.textContent=label;
  if(now<roundDeadline&&caughtCount<10)return;
+ finishRound(caughtCount>=10?'열 명의 친구를 모두 만났어요. 멋진 공연이었습니다.':'60초의 공연이 끝났어요. 당신의 이야기를 기록합니다.');
+}
+function finishRound(message){
+ if(roundOver||roundDeadline===null)return;
  roundOver=true;
- if(caughtCount>=10){
-  const root=document.documentElement;
-  root.classList.add('finale');
-  setTimeout(()=>root.classList.remove('curtain-opening'),reducedMotion.matches?0:1400);
- }
+ roundPausedAt=null;
  savedView=null;
  stopCamera();
- timeDisplay.hidden=true;
- scoreDisplay.textContent='최종 점수 '+eatScore+'점';
- document.documentElement.classList.add('round-over');
+ comboDisplay.hidden=true;eatModeDisplay.hidden=true;
+ scoreDisplay.textContent=String(eatScore);
+ ui?.finish({score:eatScore,maxCombo,message});
 }
 function touchPress(){
  const age=(performance.now()-touchTime)/210;
@@ -677,6 +645,20 @@ function scatterPaper(position,strength,kind='land'){
    {transform:`translate(${x}px,${chewing?48:9}px) rotate(${x*12}deg)`,opacity:0}
   ],{duration:chewing?560:380});
   motion.onfinish=()=>scrap.remove();
+ }
+}
+function stageBurst(point,comboHit){
+ if(!point||reducedMotion.matches)return;
+ const ring=document.createElement('span');ring.className='stage-ring';
+ ring.style.left=point[0]+'px';ring.style.top=point[1]+'px';ring.setAttribute('aria-hidden','true');document.body.append(ring);
+ const ripple=ring.animate([{transform:'translate(-50%,-50%) scale(.3)',opacity:.9},{transform:'translate(-50%,-50%) scale(4)',opacity:0}],{duration:440,easing:'ease-out'});
+ ripple.onfinish=ripple.oncancel=()=>ring.remove();
+ for(let i=0;i<(comboHit?14:8);i++){
+  const spark=document.createElement('span');spark.className='stage-spark';spark.setAttribute('aria-hidden','true');
+  spark.style.left=point[0]+'px';spark.style.top=point[1]+'px';document.body.append(spark);
+  const angle=i*Math.PI*2/(comboHit?14:8),radius=(comboHit?85:45)+Math.random()*24;
+  const motion=spark.animate([{transform:'translate(-50%,-50%) scale(.4)',opacity:1},{transform:`translate(${Math.cos(angle)*radius}px,${Math.sin(angle)*radius-20}px) rotate(110deg) scale(0)`,opacity:0}],{duration:520+Math.random()*160,easing:'ease-out'});
+  motion.onfinish=motion.oncancel=()=>spark.remove();
  }
 }
 function updateFlight(dt){
@@ -730,6 +712,7 @@ function returnPractice(){
  practice.returning={from:[...practice.position],to:routePosition(route,bestDistance),elapsed:0};
 }
 function stopHandInteraction(message='손 조작을 마쳤어요.'){
+ if(roundDeadline!==null&&!roundOver){finishRound(message);return;}
  avatarTarget=characterTargets();
  returnPractice();gesture.reset();handMode=false;handReady=false;handBusy=false;handPoint=null;
  faceReady=false;bite=null;biteNoticeUntil=0;
@@ -745,13 +728,17 @@ function stopHandInteraction(message='손 조작을 마쳤어요.'){
  if(savedView){[yaw,pitch,distance]=savedView;savedView=null;}
  updateMonitor();
  if(cameraStream)monitorHint.textContent=message;
+ if(ui?.screen==='practice')ui.show('prepare');
 }
 function receiveHand(points,time,mouth,hands){
+ if(roundPausedAt!==null)return;
  const now=performance.now();lastHandResult=now;
  avatarTarget=characterTargets((hands||(points?[points]:[])).map(p=>handSample(p,videoAspect)),mouthSample(mouth,videoAspect));
  updateMonitor(hands||(points?[points]:[]),mouth);
  updateRoundClock(now);
  if(roundOver)return;
+ if(ui?.screen==='practice')return;
+ if(ui&&roundDeadline===null)return;
  const sample=comfortableHandSample(handSample(points,videoAspect));
  latestMouth=mouth;
  eatingWindow.update(mouthSample(mouth,videoAspect),now);
@@ -811,7 +798,8 @@ function grabActor(actor){
   actor.position=handPoint.map((v,i)=>cameraEye[i]+(v-cameraEye[i])*t);
   actor.position[1]-=actorCenterHeight(actor);
  }
- handStatus.textContent='잡았어요! 입을 한 번 크게 벌리고 쥔 손으로 훑어 보세요.';
+ playStageSound('grab');stageBurst(actorScreenPoint(actor),false);
+ handStatus.textContent=autoEat?'잡았어요! 바로 먹을게요.':'잡았어요! 입을 한 번 크게 벌리고 쥔 손으로 훑어 보세요.';
 }
 function respawnNearHand(actor){
  actor.held=false;actor.returning=null;actor.grabAfter=performance.now()+220;
@@ -836,18 +824,21 @@ function respawnNearHand(actor){
 function showEatPoints(points){
  const p=projectPoint(characterMouthWorld,currentVP,innerWidth,innerHeight);if(!p)return;
  const label=document.createElement('span');label.className='eat-points';label.textContent='+'+points;
- label.style.left=p[0]+'px';label.style.top=(p[1]-35)+'px';document.body.append(label);
+ label.style.left=p[0]+'px';label.style.top=(p[1]-35)+'px';label.setAttribute('aria-hidden','true');document.body.append(label);
+ if(reducedMotion.matches){setTimeout(()=>label.remove(),500);return;}
+ stageBurst(p,combo.count>=3);
+ scoreDisplay.animate([{transform:'scale(1)'},{transform:'scale(1.3)',color:'#f6df9e',offset:.3},{transform:'scale(1)'}],{duration:300});
  const motion=label.animate([{transform:'translate(-50%,0) scale(.85)',opacity:1},{transform:'translate(-50%,-55px) scale(1.15)',opacity:0}],{duration:500});
  motion.onfinish=()=>label.remove();
 }
 function checkBite(mouth,hand){
- const active=eatingWindow.active(performance.now()),sample=mouthSample(mouth,videoAspect);
+ const active=autoEat||eatingWindow.active(performance.now()),sample=mouthSample(mouth,videoAspect);
  mouthCursor.hidden=true;
- faceStatus.textContent=active?'먹기 모드 · 쥔 손으로 인형을 쓸어 담으세요.':!faceReady?'입 인식을 준비하지 못했어요. 캐릭터 움직이기를 다시 눌러 주세요.':!sample?'얼굴이 카메라에 보이도록 해 주세요.':'입을 한 번 크게 벌리면 2초간 자동으로 먹어요.';
+ faceStatus.textContent=autoEat?'손으로 잡으면 자동으로 먹어요.':active?'먹기 모드 · 쥔 손으로 인형을 쓸어 담으세요.':!faceReady?'입 인식을 준비하지 못했어요. 움직임 연결을 다시 눌러 주세요.':!sample?'얼굴이 카메라에 보이도록 해 주세요.':'입을 한 번 크게 벌리면 2초간 자동으로 먹어요.';
  if(!currentVP)return;
  const screen=projectPoint(characterMouthWorld,currentVP,innerWidth,innerHeight);
  if(screen){
-  mouthCursor.hidden=false;mouthCursor.classList.toggle('open',active);
+  mouthCursor.hidden=autoEat;mouthCursor.classList.toggle('open',active);
   mouthCursor.style.left=screen[0]+'px';mouthCursor.style.top=screen[1]+'px';
   mouthCursor.style.width=mouthCursor.style.height='64px';
  }
@@ -857,9 +848,10 @@ function checkBite(mouth,hand){
  const side=hand.x>.5?0:1,sign=side===0?-1:1;
  // Move the grabbing hand to the character's mouth while keeping the other hand live.
  const pawTarget=[sign*.18-sign*1.395,.79-.70,.67-.30+.13];
- bite={start,target,height,side,pawStart:[...avatarPose.paws[side]],pawTarget,time:performance.now(),scale:1,crunch:-1};
+ const lift=Math.min(.65,Math.hypot(target[0]-start[0],target[1]-start[1])*.18+.12);
+ bite={start,target,height,side,lift,jawStart:avatarPose.mouth,pawStart:[...avatarPose.paws[side]],pawTarget,time:performance.now(),scale:1,crunch:-1};
  gesture.held=false;
- handStatus.textContent='와작! 손이 입으로 이동해 친구를 먹어요.';
+ handStatus.textContent='입으로 가져가서, 오물오물!';
 }
 function gatherFriends(){
  // Keep walking friends on the two existing front-stage paths, within a small reach.
@@ -872,63 +864,67 @@ function gatherFriends(){
  floaters.forEach((actor,i)=>{actor.anchor=[i%2?-3.4:3.4,2.8+Math.floor(i/2)*1.8,3];actor.held=false;actor.queued=false;actor.grabAfter=0;});
 }
 handOn.onclick=()=>{
+ if(handMode)return;
  if(!imageReady){handStatus.textContent='먼저 카메라 영상을 켜 주세요.';return;}
  handMode=true;gesture.reset();eatingWindow.reset();gatherFriends();savedView=[yaw,pitch,distance];yaw=0;pitch=0;distance=26;drag=null;
  for(const id of ['#home','#in','#out'])document.querySelector(id).disabled=true;
- handOn.hidden=true;handOff.hidden=false;handStatus.textContent='손과 얼굴 인식을 준비하고 있어요…';faceStatus.textContent='입 인식 준비 중…';lastHandResult=performance.now();lastHandFrame=-1;lastHandSubmit=0;
+ handOn.hidden=true;handOff.hidden=false;handStatus.textContent=autoEat?'손 인식을 준비하고 있어요…':'손과 얼굴 인식을 준비하고 있어요…';faceStatus.textContent=autoEat?'입 인식 없이 놀아요.':'입 인식 준비 중…';lastHandResult=performance.now();lastHandFrame=-1;lastHandSubmit=0;
  const worker=new Worker('./hand-worker.mjs',{type:'module'});handWorker=worker;
- const failHand=()=>{if(handWorker===worker)stopHandInteraction('손 인식을 준비하지 못했어요. 캐릭터 움직이기를 다시 눌러 주세요.');};
+ const failHand=()=>{if(handWorker===worker)stopHandInteraction('손 인식을 준비하지 못했어요. 움직임 연결을 다시 눌러 주세요.');};
  handTimer=setTimeout(failHand,30000);worker.onerror=failHand;
  worker.onmessage=({data})=>{
   if(handWorker!==worker)return;
   if(data.type==='ready'){
    clearTimeout(handTimer);handReady=true;faceReady=data.faceReady;
-   if(roundDeadline===null){
-    roundDeadline=performance.now()+roundLength;
-    setTimeout(()=>updateRoundClock(performance.now()),roundLength);
-   }
-   handStatus.textContent=faceReady?'손을 들고 입을 벌려 보세요. 캐릭터가 따라 해요. 입을 한 번 크게 벌리고 쥔 손으로 좌우를 훑으면 연속으로 먹어요.':'입 인식은 준비되지 않았어요. 작은 손 움직임과 손으로 집기는 할 수 있어요.';
+   if(!autoEat&&!faceReady){stopHandInteraction('입 인식 준비가 어려워요. ‘손으로 잡으면 먹기’를 선택하면 바로 놀 수 있어요.');return;}
+   handStatus.textContent='준비됐어요. 바로 공연을 시작할 수 있어요.';
+   ui.trackingReady();
   }
   else if(data.type==='hand'){handBusy=false;receiveHand(data.points,data.time,data.mouth,data.hands);}
   else if(data.type==='error')failHand();
  };
- worker.postMessage({type:'init',face:true});
+ worker.postMessage({type:'init',face:!autoEat});
  updateMonitor();
 };
 handOff.onclick=()=>stopHandInteraction();
 async function submitHandFrame(now){
- if(!handMode||!handReady||handBusy||!cameraStream||video.readyState<2||now-lastHandSubmit<33||video.currentTime===lastHandFrame)return;
+ if(roundPausedAt!==null||!handMode||!handReady||handBusy||!cameraStream||video.readyState<2||now-lastHandSubmit<33||video.currentTime===lastHandFrame)return;
  handBusy=true;lastHandSubmit=now;lastHandFrame=video.currentTime;const worker=handWorker;
  try{
   const image=await createImageBitmap(video,{resizeWidth:640,resizeHeight:Math.max(1,Math.round(640/videoAspect))});
   if(handWorker!==worker){image.close();return;}
-  worker.postMessage({type:'frame',image,time:now,trackMouth:faceReady},[image]);
- }catch(error){if(handWorker===worker)stopHandInteraction('손 영상을 읽지 못했어요. 캐릭터 움직이기를 다시 눌러 주세요.');}
+  worker.postMessage({type:'frame',image,time:now,trackMouth:!autoEat&&faceReady},[image]);
+ }catch(error){if(handWorker===worker)stopHandInteraction('손 영상을 읽지 못했어요. 움직임 연결을 다시 눌러 주세요.');}
 }
 function updateHandOverlay(){
- if(!handMode)return;
- const feeding=eatingWindow.active(performance.now());
+ if(!handMode||roundPausedAt!==null||(ui&&roundDeadline===null))return;
+ const feeding=autoEat||eatingWindow.active(performance.now());
  eatModeDisplay.hidden=false;eatModeDisplay.dataset.active=String(feeding);
- eatModeDisplay.textContent=feeding?'먹기 모드 '+Math.ceil((eatingWindow.until-performance.now())/100)/10+'초 · 쥔 손으로 훑으세요':'입을 한 번 크게 벌리세요 · 2초 먹기 모드';
+ eatModeDisplay.textContent=autoEat?'친구를 잡으면 자동으로 먹어요!':feeding?'먹기 모드 '+Math.ceil((eatingWindow.until-performance.now())/100)/10+'초 · 쥔 손으로 훑으세요':'입을 한 번 크게 벌리세요 · 2초 먹기 모드';
  if(handReady&&performance.now()-lastHandResult>850)receiveHand(null,performance.now());
  if(bite){
-  const motion=feedingMotion(performance.now()-bite.time);
+  const motion=feedingMotion(performance.now()-bite.time,bite.jawStart);
   bite.scale=motion.scale;
   practice.position=bite.start.map((value,i)=>value+(bite.target[i]-value)*motion.travel);
-  practice.position[1]-=bite.height*bite.scale;
-  avatarPose.paws[bite.side]=bite.pawStart.map((v,i)=>v+(bite.pawTarget[i]-v)*motion.travel);
-  avatarPose.mouth=motion.jaw;
+  practice.position[1]+=bite.lift*motion.lift-bite.height*bite.scale;
+  practice.position[2]-=.18*motion.consume;
+  avatarPose.paws[bite.side]=bite.pawStart.map((v,i)=>{
+   const carrying=v+(bite.pawTarget[i]-v)*motion.travel+(i===1?bite.lift/characterPlacement.scale*motion.lift:0);
+   return carrying+(avatarTarget.paws[bite.side][i]-carrying)*motion.release;
+  });
+  avatarPose.mouth=motion.jaw+(avatarTarget.mouth-motion.jaw)*motion.release;
   if(motion.crunch>bite.crunch){
    bite.crunch=motion.crunch;
    playStageSound('bite');scatterPaper(bite.target,.8,'bite');
   }
   if(motion.done){
    const now=performance.now(),points=combo.hit(now);
-   eatScore+=points;scoreDisplay.textContent='점수 '+eatScore;
+   eatScore+=points;scoreDisplay.textContent=String(eatScore);maxCombo=Math.max(maxCombo,combo.count);
    if(++caughtCount===10){
     updateRoundClock(now);
     return;
    }
+   playStageSound(combo.count>=3?'combo':'score',combo.count);
    comboDisplay.textContent=combo.count+' COMBO';comboDisplay.hidden=!combo.active(now);
    showEatPoints(points);
    bite=null;respawnNearHand(practice);practice=null;
@@ -956,42 +952,53 @@ function updateHandOverlay(){
  grabTarget.hidden=!target;
  if(target){grabTarget.dataset.label=pendingGrab?'다음 차례':'잡을 친구';grabTarget.style.left=target[0]+'px';grabTarget.style.top=target[1]+'px';}
 }
-status.textContent='산책하는 친구 10 · 떠다니는 친구 4 · 드래그로 회전';
+status.textContent='극장을 준비하고 있어요…';
 function stopCamera(message='카메라를 껐어요. 다시 켜서 이어갈 수 있습니다.'){
- cameraRequest++;const stream=cameraStream;cameraStream=null;imageReady=false;
+ if(roundDeadline!==null&&!roundOver){finishRound(message);return;}
+ cameraRequest++;cameraStartup?.abort();cameraStartup=null;const stream=cameraStream;cameraStream=null;imageReady=false;
  if(stream)stream.getTracks().forEach(track=>track.stop());
  video.pause();video.srcObject=null;lastVideoTime=-1;videoAspect=0;shadowDirty=true;
- stopHandInteraction('카메라를 켠 뒤 캐릭터 움직이기를 눌러 주세요.');
+ stopHandInteraction('카메라를 켜면 움직임이 자동으로 연결돼요.');
  cameraOn.disabled=false;cameraOn.hidden=false;cameraOn.textContent='카메라 켜기';cameraOff.hidden=true;cameraStatus.textContent=message;
+ cameraChoice.disabled=false;cameraProblem.hidden=true;
  monitorHint.textContent=message;
+ ui?.cameraReady(false);
 }
 cameraOn.onclick=async()=>{
- if(!navigator.mediaDevices?.getUserMedia){cameraStatus.textContent=monitorHint.textContent='Chrome에서 http://127.0.0.1:4322 로 열어 주세요.';return;}
+ if(cameraOn.disabled)return;
+ if(!navigator.mediaDevices?.getUserMedia){cameraStatus.textContent=monitorHint.textContent='카메라를 사용할 수 없는 환경이에요. HTTPS 게임 주소를 Chrome에서 직접 열어 주세요.';return;}
+ const policy=document.permissionsPolicy||document.featurePolicy;
+ if(policy?.allowsFeature&&!policy.allowsFeature('camera')){cameraStatus.textContent=monitorHint.textContent='이 화면에서는 카메라 접근이 차단되어 있어요. 게임 주소를 새 Chrome 탭에서 직접 열어 주세요.';return;}
+ cameraStartup?.abort();const startup=new AbortController();cameraStartup=startup;
  const request=++cameraRequest;cameraOn.disabled=true;cameraOn.textContent='권한 확인 중…';cameraOff.hidden=false;cameraOff.textContent='취소';
+ cameraChoice.disabled=true;cameraProblem.hidden=true;
  cameraStatus.textContent='Chrome의 카메라 권한 창에서 허용을 눌러 주세요.';
  monitorState.textContent='카메라 연결 중…';monitorStart.disabled=true;monitorHint.textContent='권한 창이 나오면 직접 허용해 주세요.';
  try{
-  let stream;
-  try{
-   stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30,max:30},facingMode:'user'}});
-  }catch(error){
-   if(request!==cameraRequest)return;
-   if(error.name!=='NotReadableError'&&error.name!=='OverconstrainedError')throw error;
-   cameraStatus.textContent='기본 카메라 설정으로 다시 연결하고 있어요.';
-   stream=await navigator.mediaDevices.getUserMedia({audio:false,video:true});
-  }
+  const stream=await connectAvailableCamera(navigator.mediaDevices,startup.signal,{deviceId:cameraChoice.value,onAttempt:message=>{if(request===cameraRequest)cameraStatus.textContent=monitorHint.textContent=message;}});
   if(request!==cameraRequest){stream.getTracks().forEach(track=>track.stop());return;}
   cameraStream=stream;video.srcObject=stream;
+  refreshCameraChoices();
   stream.getVideoTracks().forEach(track=>track.addEventListener('ended',()=>{if(cameraStream===stream)stopCamera('카메라 연결이 끊겼어요. 다시 켜 주세요.');}));
-  await video.play();if(request!==cameraRequest)return;
+  cameraOn.textContent='영상 불러오는 중…';monitorState.textContent='카메라 영상 준비 중…';
+  cameraStatus.textContent=monitorHint.textContent='카메라에 연결됐어요. 첫 영상을 기다리고 있어요.';
+  await waitForCameraPreview(video,startup.signal);if(request!==cameraRequest)return;
+  cameraStartup=null;
   cameraOn.hidden=true;cameraOn.disabled=false;cameraOff.textContent='카메라 끄기';
-  cameraStatus.textContent='카메라 연결됨 · 아래 확인창에서 내 모습과 손·입 인식을 확인하세요.';
+  cameraStatus.textContent=autoEat?'카메라 연결됨 · 손으로 잡으면 바로 먹어요.':'카메라 연결됨 · 아래 확인창에서 내 모습과 손·입 인식을 확인하세요.';
+  imageReady=true;handOn.disabled=false;ui?.cameraReady(true);
   updateMonitor();
+  // Start tracking from video readiness, independently of the 3D render loop.
+  if(!handMode)handOn.click();
  }catch(error){
   if(request!==cameraRequest)return;
   console.warn('Webcam setup failed:',error.name,error.message);
-  const messages={NotAllowedError:'카메라 권한이 필요해요. Chrome 주소창의 카메라 설정에서 허용한 뒤 다시 켜 주세요.',NotFoundError:'연결된 웹캠을 찾지 못했어요. 웹캠 연결을 확인해 주세요.',NotReadableError:'Chrome이 웹캠을 열지 못했어요. 카메라를 쓰는 다른 앱이나 탭을 닫고 다시 켜 주세요.'};
+  const messages={NotAllowedError:'카메라 권한이 필요해요. Chrome 주소창의 카메라 설정과 Windows 카메라 개인정보 설정에서 접근을 허용한 뒤 다시 켜 주세요.',NotFoundError:'연결된 웹캠을 찾지 못했어요. 웹캠 연결을 확인해 주세요.',NotReadableError:'Chrome이 웹캠을 열지 못했어요. 카메라를 쓰는 다른 앱이나 탭을 닫고 다시 켜 주세요.',CameraRequestTimeout:'카메라 연결 응답이 없어요. Chrome 주소창의 카메라 권한을 확인한 뒤 아래 버튼으로 다시 시도해 주세요.',CameraFrameTimeout:'카메라에 연결됐지만 영상이 오지 않아요. 다른 카메라 앱을 닫고 Chrome의 카메라 설정에서 사용할 웹캠을 확인해 주세요.',CameraPlaybackBlocked:'카메라 영상 재생이 차단됐어요. 게임 탭을 화면에 띄우고 아래 버튼으로 다시 시도해 주세요.'};
   stopCamera(messages[error.name]||'카메라를 시작하지 못했어요. 연결을 확인하고 다시 켜 주세요.');
+  monitorState.textContent='카메라 연결 실패';
+  cameraProblem.hidden=false;cameraProblem.textContent=error.name==='NotReadableError'?'선택한 카메라를 열 수 없어요. 위에서 다른 카메라를 선택하거나 카메라를 사용 중인 앱·다른 게임 탭을 닫아 주세요.':error.name==='CameraRequestTimeout'?'카메라 권한 창에서 응답을 기다리고 있어요. Chrome 주소창의 카메라 아이콘을 확인해 주세요.':'안내를 확인한 뒤 카메라를 다시 연결해 주세요.';
+  refreshCameraChoices();
+  cameraOn.textContent='카메라 다시 연결하기';
  }
 };
 cameraOff.onclick=()=>stopCamera();window.addEventListener('pagehide',()=>stopCamera());
@@ -1015,8 +1022,6 @@ function updateVideoTexture(){
  }
  // The same local video also appears in the small movement monitor.
  lastVideoTime=video.currentTime;
- imageReady=true;
- if(!handMode)handOn.disabled=false;
 }
 function norm(v){const l=Math.hypot(...v);return v.map(x=>x/l);}
 function cross(a,b){return [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];}
@@ -1088,14 +1093,88 @@ document.querySelector('#home').onclick=reset;document.querySelector('#in').oncl
 canvas.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','-','Home'].includes(e.key))return;e.preventDefault();if(handMode)return;if(e.key==='ArrowLeft')yaw-=.12;if(e.key==='ArrowRight')yaw+=.12;if(e.key==='ArrowUp')pitch=Math.min(1.25,pitch+.09);if(e.key==='ArrowDown')pitch=Math.max(-.16,pitch-.09);if(e.key==='+')zoom(.9);if(e.key==='-')zoom(1.1);if(e.key==='Home')reset();render();});
 window.addEventListener('resize',render);
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();stopCamera();fail('3D 화면이 잠시 중단됐어요. 새로고침하면 다시 열립니다.');});
+function resetRound(){
+ // Cancel the old round before stopping devices so it cannot finish a second time.
+ roundDeadline=null;roundPausedAt=null;roundOver=false;
+ stopCamera('카메라를 켜면 내 모습이 거울에 보여요.');
+ eatScore=0;caughtCount=0;maxCombo=0;combo.count=0;combo.last=-Infinity;
+ scoreDisplay.textContent='0';timeDisplay.textContent='01:00';timeDisplay.hidden=false;
+ comboDisplay.hidden=true;eatModeDisplay.hidden=true;
+ gatherFriends();reset();
+ document.querySelectorAll('.eat-points,.landing-scrap,.stage-spark,.stage-ring').forEach(el=>el.remove());
+}
+function startRound(){
+ if(!cameraStream||!imageReady||!handReady||(!autoEat&&!faceReady)){
+  handStatus.textContent=autoEat?'카메라와 손 인식을 다시 확인해 주세요.':'카메라와 손·입 인식을 다시 확인해 주세요.';
+  ui.show('prepare');return false;
+ }
+ gesture.reset();eatingWindow.reset();gatherFriends();
+ latestHand=null;latestMouth=null;lastSeenHand=-Infinity;
+ eatScore=0;caughtCount=0;maxCombo=0;combo.count=0;combo.last=-Infinity;
+ scoreDisplay.textContent='0';timeDisplay.textContent='01:00';timeDisplay.hidden=false;
+ roundOver=false;roundPausedAt=null;roundDeadline=performance.now()+roundLength;
+ playStageSound('bell');return true;
+}
+function pauseRound(){
+ if(roundDeadline===null||roundOver||roundPausedAt!==null)return;
+ roundPausedAt=performance.now();
+ handCursor.hidden=true;grabTarget.hidden=true;mouthCursor.hidden=true;
+}
+function resumeRound(){
+ if(roundPausedAt===null||roundOver)return;
+ const elapsed=performance.now()-roundPausedAt;
+ const shift=value=>Number.isFinite(value)?value+elapsed:value;
+ roundDeadline+=elapsed;combo.last=shift(combo.last);eatingWindow.until=shift(eatingWindow.until);
+ lastHandResult=shift(lastHandResult);lastSeenHand=shift(lastSeenHand);
+ gesture.lastSeen=shift(gesture.lastSeen);gesture.openSince=shift(gesture.openSince);
+ biteNoticeUntil=shift(biteNoticeUntil);touchTime=shift(touchTime);
+ if(bite)bite.time+=elapsed;
+ for(const actor of grabbableActors)actor.grabAfter=shift(actor.grabAfter);
+ lastHandFrame=-1;lastHandSubmit=0;roundPausedAt=null;
+}
+ui=createTheatreUI({enableSound,startCamera:()=>cameraOn.click(),prepare:resetRound,explore:resetRound,stopTracking:stopHandInteraction,startRound,refreshInstructions:updateEatingMode,sceneChanged(name){stageAudio.setPaused(false);if(name==='result')playStageSound('finish');},pause(){pauseRound();stageAudio.setPaused(true);},resume(){resumeRound();stageAudio.setPaused(false);},finish:finishRound});
+function updateEatingMode(){
+ document.body.dataset.eatingMode=autoEat?'auto':'mouth';
+ for(const choice of document.querySelectorAll('.eating-mode-choice'))choice.value=autoEat?'auto':'mouth';
+ const copy=autoEat?{
+  'lesson-summary':'손으로 잡기만 하면 자동으로 먹어요. 입은 벌리지 않아도 돼요.',
+  'gesture-one-title':'친구 위로 손끝 옮기기','gesture-one-note':'화면에 손 전체를 보여 주세요.',
+  'gesture-two-title':'엄지와 검지를 붙이기','gesture-two-note':'잡으면 바로 먹어요. 붙인 채 다음 친구로!',
+  'lesson-instruction':'친구 위에서 엄지와 검지를 붙여요. 입을 벌리지 않아도 자동으로 먹어요.',
+  'pause-rules':'친구 위에서 엄지와 검지를 붙이면 자동으로 먹어요. 붙인 채 좌우로 움직여요.',
+  'prepare-pose-title':'손을 보여 주세요.','prepare-pose-note':'손 전체가 거울 안에 보이도록 해 주세요.'
+ }:{
+  'lesson-summary':'입을 한 번 크게 벌린 뒤, 손가락을 붙여 친구를 잡아요.',
+  'gesture-one-title':'입을 크게 벌리기','gesture-one-note':'2초 동안 먹기 모드',
+  'gesture-two-title':'엄지와 검지를 붙이기','gesture-two-note':'붙인 채 좌우로 움직여 친구 잡기',
+  'lesson-instruction':'입을 벌리고, 손가락을 붙여 좌우로! 60초 동안 친구들을 모아 보세요.',
+  'pause-rules':'입을 크게 벌리면 2초간 먹기 모드. 엄지와 검지를 붙인 채 좌우로 움직여요.',
+  'prepare-pose-title':'얼굴과 손을 보여 주세요.','prepare-pose-note':'얼굴과 손 전체가 거울 안에 보이도록 해 주세요.'
+ };
+ for(const [id,text] of Object.entries(copy))document.getElementById(id).textContent=text;
+ if(document.body.dataset.mode!=='explore'){
+  eatModeDisplay.textContent=autoEat?'친구를 잡으면 자동으로 먹어요!':'입을 크게 벌려 주세요.';
+  document.getElementById('game-instruction').textContent='엄지와 검지를 붙인 채 좌우로 움직여요.';
+ }
+}
+for(const choice of document.querySelectorAll('.eating-mode-choice'))choice.addEventListener('change',()=>{
+ if(!['prepare','practice'].includes(ui.screen))return;
+ autoEat=choice.value==='auto';
+ if(handMode)stopHandInteraction();
+ eatingWindow.reset();ui.show('prepare');
+ if(imageReady)handOn.click();
+});
+updateEatingMode();
 let previousFrame=performance.now();
 function animate(now){
  const dt=Math.min(.05,Math.max(0,(now-previousFrame)/1000));previousFrame=now;
  updateRoundClock(now);
  if(!document.hidden&&!gl.isContextLost()){
-  backgroundTime+=dt;
-  easeCharacterPose(avatarPose,avatarTarget,dt);
-  if(!roundOver){updateWalkers(dt);updateFlight(dt);}
+  if(roundPausedAt===null){
+   backgroundTime+=dt;
+   easeCharacterPose(avatarPose,avatarTarget,dt);
+   if(!roundOver){updateWalkers(dt);updateFlight(dt);}
+  }
   render();submitHandFrame(now);
  }
  requestAnimationFrame(animate);
